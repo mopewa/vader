@@ -74,7 +74,6 @@ plot(timeArray, distArray);
 %% Lab 1 Task 4 Its Getting Real
 
 
-NAME = 'sim'
 
 timeArray = zeros(1,1);
 distArray = zeros(1,1);
@@ -84,7 +83,8 @@ timeArray(1) = 0;
 distArray(1) = 0;
 time = 0.0;
 
-robot = neato(NAME);
+robot = neato('nano')
+
 v = 0.05;
 encoder = robot.encoders.data.left
 initEncoder = encoder
