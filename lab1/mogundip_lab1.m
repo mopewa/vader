@@ -64,10 +64,11 @@ timer = tic;
 while (signedDistanceCM <= 20)
     robot.sendVelocity(.05,.05);
     pause(.005);
-    signedDistanceCM = (robot.encoders.data.left - encoderStartCM)/10
+    signedDistanceCM = (robot.encoders.data.left - encoderStartCM)/10;
     timeArray(iteration) = toc(timer);
     encoderArray(iteration) = signedDistanceCM;
     iteration = iteration + 1;
+    
 end
 robot.sendVelocity(0,0);
 pause(2);
@@ -79,6 +80,7 @@ while(signedDistanceCM >= -20)
     robot.sendVelocity(-.05,-.05);
     pause(.005);
     signedDistanceCM = (robot.encoders.data.left - encoderStartCM) / 10;
+    %distanceCM = abs((robot.encoders.data.left - encoderStartCM)) / 10;
     encoderArray(iteration) = distanceSoFar + signedDistanceCM;
     timeArray(iteration) = toc(timer);
     
