@@ -2,7 +2,13 @@
 robot = neato('mega');
 pause(3);
 robot.startLaser();
-pause(5);
+pause(10);
+maxObjectRange = 2;
+prevBearing = [1,0,0];
+figure(1);
+clf
+hold on
+tic;
 
 %% Test motorFollow
 
@@ -10,10 +16,25 @@ pause(5);
 disp('about to start');
 while (true)
     ranges = robot.laser.data.ranges;
-    [lVeloc, rVeloc] = motorFollow(ranges);
+    [nearestX, nearestY, nearestTheta] = nearestObject(ranges);
+    if (nearestX == maxObjectRange && nearestY == maxObjectRange && nearestTheta == 0)
+        nearestX = prevBearing(1);
+        nearestY = prevBearing(2);
+        nearestTheta = prevBearing(3);
+        i = i + 1;
+    else
+        prevBearing = [nearestX, nearestY, nearestTheta];
+        i = 1;
+    end
+    if (i == 7)
+       prevBearing = [1,0,0];
+       i = 1;
+    end
+    [lVeloc, rVeloc, error] = motorFollow(nearestX, nearestY, nearestTheta);
     disp([lVeloc, rVeloc]);
+    plot(toc, error, 'x');
     sendVelocity(robot, lVeloc, rVeloc);
-    pause(.75);
+    pause(.1);
 end
 
 robot.stopLaser();

@@ -1,23 +1,25 @@
-function [lVeloc, rVeloc] = motorFollow(lidar_data)
+function [lVeloc, rVeloc, error] = motorFollow(x, y, theta)
 % motorFollow  Given the robot's lidar data, get a velocity to follow an
 % object, keeping it at a constant distance.
 
     idealObjectRange = 1;
-    scalingFactor = 1/2;
-    W = 0.20; %Seperation between the robot wheels
+    scalingFactor = 0.5;
+    W = 0.235; %Seperation between the robot wheels
 
-    [nearestX, nearestY, nearestTheta] = nearestObject(lidar_data);
-    if nearestX == idealObjectRange && nearestY == idealObjectRange && nearestTheta == 0
+    distance = computeDistance(0, 0, x, y);
+    if distance == idealObjectRange && theta == 0
         % If the robot is at the ideal distance stop moving
         lVeloc = 0;
         rVeloc = 0;
+        error = 0;
     else
         % Assuming for now that robot is at sensor origin
-        distance = computeDistance(0, 0, nearestX, nearestY);
-        k = nearestTheta/(distance - idealObjectRange);
-        V = (distance - idealObjectRange) * scalingFactor;
-        lVeloc = V*(1 - (W/2)*k);
-        rVeloc = V*(1 + (W/2)*k);
+        theta = (theta/360)*2*pi;
+        V = (distance - idealObjectRange);
+        lVeloc = (V - (W/2)*theta)*scalingFactor;
+        rVeloc = (V + (W/2)*theta)*scalingFactor;
+        [lVeloc, rVeloc] = scaleVelocity(lVeloc, rVeloc);
+        error = (distance - idealObjectRange);
     end
 end
 
