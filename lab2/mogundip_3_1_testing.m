@@ -31,7 +31,7 @@ clf;
 hold on;
 line([0,0], [-3 3]);
 line([-3 3], [0 0]);
-% rotate camera to line up with robot frame
+% rotate camera to line up with robot frame (or just plot(-y,x))
 view([-90 90]);
 
 % infinite running loop -- ctrl + c to end
