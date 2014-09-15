@@ -35,8 +35,8 @@ prevTimeStamp = timeStamp;
 
 r.drive(vl, vr);
 
-plot(currentTime, vl, '-.b+');
-plot(currentTime, vr, '-.bo');
+%plot(currentTime, vl, '-.b+');
+%plot(currentTime, vr, '-.bo');
 
 
 while(currentTime < t)
@@ -53,8 +53,8 @@ while(currentTime < t)
     vl = (0.3 * kv) - 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
     vr = (0.3 * kv) + 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
     r.drive(vl, vr);
-    plot(currentTime, vl, '-.b+');
-    plot(currentTime, vr, '-.bo');
+    %plot(currentTime, vl, '-.b+');
+    %plot(currentTime, vr, '-.bo');
     pause(0.01);
 end
 

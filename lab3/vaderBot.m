@@ -22,6 +22,8 @@ classdef vaderBot
             obj.robot = r;
             obj.L = 0.235;
             
+            figure(2);
+            hold on;
             obj.posPlot = plot(obj.xPos, obj.yPos,'r-');
             xlim([0.0 0.5]);
             ylim([0.0 0.5]);
@@ -47,6 +49,7 @@ classdef vaderBot
             set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
                 obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...
                 obj.yPos(obj.index)]);
+            plot(obj.posPlot);
         end
     end
     
