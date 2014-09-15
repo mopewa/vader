@@ -32,7 +32,7 @@ prevLeftEncoder = leftEncoder
 prevRightEncoder = rightEncoder
 prevTimeStamp = timeStamp
 
-sendVelocity(robot, vl, vr); 
+r.drive(vl, vr);
 
 plot(currentTime, vl, '-.b+');
 plot(currentTime, vr, '-.bo');
@@ -50,7 +50,7 @@ while(currentTime < t)
     currentTime = toc(timer);
     vl = (0.3 * kv) - 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
     vr = (0.3 * kv) + 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
-    sendVelocity(robot, vl, vr); 
+    r.drive(r, vl, vr);
     plot(currentTime, vl, '-.b+');
     plot(currentTime, vr, '-.bo');
     pause(0.01);
