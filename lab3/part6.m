@@ -40,15 +40,15 @@ r.drive(vl, vr);
 
 
 while(currentTime < t)
-    eL = leftEncoder - prevLeftEncoder;
-    eR = rightEncoder - prevRightEncoder;
-    dt = timeStamp - prevTimeStamp;
+    eL = leftEncoder - prevLeftEncoder
+    eR = rightEncoder - prevRightEncoder
+    dt = timeStamp - prevTimeStamp
     
     prevLeftEncoder = leftEncoder;
     prevRightEncoder = rightEncoder;
-    prevTimeStamp = timeStamp;
+    prevTimeStamp = timeStamp
 
-    r.updateState(eL, eR, dt);
+    r = r.updateState(eL, eR, dt);
     currentTime = toc(timer);
     vl = (0.3 * kv) - 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
     vr = (0.3 * kv) + 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
@@ -60,3 +60,13 @@ end
 
 sendVelocity(robot, 0, 0);
 delete(lh)
+
+eL = leftEncoder - prevLeftEncoder
+eR = rightEncoder - prevRightEncoder
+dt = timeStamp - prevTimeStamp
+    
+prevLeftEncoder = leftEncoder;
+prevRightEncoder = rightEncoder;
+prevTimeStamp = timeStamp
+
+r = r.updateState(eL, eR, dt);
