@@ -1,5 +1,5 @@
-classdef vaderRobot
-    %VADERROBOT Class used for storing the state of the robot
+classdef vaderBot
+    %VADERBOT Class used for storing the state of the robot
     
     properties
         xPos         % Array of X positions of the robot
@@ -13,7 +13,7 @@ classdef vaderRobot
     end
     
     methods
-        function obj=vaderRobot(x, y, th, r)
+        function obj=vaderBot(x, y, th, r)
             obj.xPos(1) = x;
             obj.yPos(1) = y;
             obj.theta(1) = th;
@@ -44,7 +44,9 @@ classdef vaderRobot
             
             obj.index = obj.index+1;
             
-            set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') obj.yPos(obj.index)]);
+            set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
+                obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...
+                obj.yPos(obj.index)]);
         end
     end
     

@@ -7,16 +7,17 @@ global timeStamp;
 
 robot = neato('centi');
 
+lh = event.listener(robot.encoders,'OnMessageReceived', ...
+    @basicEncoderListener);
+
 pause(5);
 
 figure(1);
 hold on;
-lh = event.listener(robot.encoders,'OnMessageReceived', ...
-    @basicEncoderListener);
 
 %% Part 5 Drive in a Figure 8
 
-r = vaderRobot(0, 0, 0, robot);
+r = vaderBot(0, 0, 0, robot);
 
 ks = .5;
 kv = .4;
@@ -28,14 +29,15 @@ vr = (0.3 * kv) + 0.14125*(kv/ks)*sin(0);
 timer = tic;
 currentTime = toc(timer);
 
-prevLeftEncoder = leftEncoder
-prevRightEncoder = rightEncoder
-prevTimeStamp = timeStamp
+prevLeftEncoder = leftEncoder;
+prevRightEncoder = rightEncoder;
+prevTimeStamp = timeStamp;
 
 r.drive(vl, vr);
 
 plot(currentTime, vl, '-.b+');
 plot(currentTime, vr, '-.bo');
+
 
 while(currentTime < t)
     eL = leftEncoder - prevLeftEncoder;
@@ -50,7 +52,7 @@ while(currentTime < t)
     currentTime = toc(timer);
     vl = (0.3 * kv) - 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
     vr = (0.3 * kv) + 0.14125*(kv/ks)*sin(currentTime*kv/2/ks);
-    r.drive(r, vl, vr);
+    r.drive(vl, vr);
     plot(currentTime, vl, '-.b+');
     plot(currentTime, vr, '-.bo');
     pause(0.01);
