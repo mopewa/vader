@@ -22,35 +22,35 @@ classdef vaderBot
             obj.robot = r;
             obj.L = 0.235;
             
-            figure(1);
-            hold on;
-            obj.posPlot = plot(obj.xPos, obj.yPos,'r-');
-            xlim([-0.5 0.5]);
-            ylim([-0.5 0.5]);
+%             figure(1);
+%             hold on;
+%             obj.posPlot = plot(obj.xPos, obj.yPos,'r-');
+%             xlim([-0.5 0.5]);
+%             ylim([-0.5 0.5]);
         end
         function drive(obj, lVeloc, rVeloc)
            obj.robot.sendVelocity(lVeloc, rVeloc); 
         end
         function obj = updateState(obj, encoderL, encoderR, dt)
             if (dt ~= 0)
-                obj.time(obj.index+1) = obj.time(obj.index) + dt
+                obj.time(obj.index+1) = obj.time(obj.index) + dt;
             
-                vL = encoderL/dt/1000
-                vR = encoderR/dt/1000
-                w = (vR - vL)/obj.L
-                V = (vR + vL)/2
+                vL = encoderL/dt/1000;
+                vR = encoderR/dt/1000;
+                w = (vR - vL)/obj.L;
+                V = (vR + vL)/2;
             
                 tempTheta = obj.theta(obj.index) + w*dt/2;
-                obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt
-                obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt
-                obj.theta(obj.index+1) = tempTheta + w*dt/2
+                obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
+                obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;
+                obj.theta(obj.index+1) = tempTheta + w*dt/2;
             
                 obj.index = obj.index+1;
             
-                set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
-                    obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...
-                    obj.yPos(obj.index)]);
-                plot(obj.posPlot);
+%                 set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
+%                     obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...
+%                     obj.yPos(obj.index)]);
+%                 plot(obj.posPlot);
             end
             
         end
