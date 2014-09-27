@@ -8,19 +8,36 @@ classdef vaderBot
         time         % Array of timestamps of the robot
         index        % Array index of the current state of the robot
         robot        % Neato robot object
-        L            % Distance between wheels on the robot in meters
         posPlot      % Plot of the position estimate of the robot
+    end
+        
+    properties (Constant)
+        W = 0.235;         % Distance between wheels on the robot in meters
+        W2 = 0.235/2;      % W/2
+    end
+
+    methods (Static)
+        function [V, w] = vlvrToVw(vl, vr)
+        % Converts wheel speeds to body linear and angular velocity.
+        V = (vr + vl)/2;
+        w = (vr - vl)/vaderBot.W;
+        end
+        
+        function [vl, vr] = VwTovlvr(V, w)
+        % Converts body linear and angular velocity to wheel speeds.
+        vr = V + vaderBot.W2 * w;
+        vl = V - vaderBot.W2 * w;
+        end
     end
     
     methods
-        function obj=vaderBot(x, y, th, r)
+        function obj = vaderBot(x, y, th, r)
             obj.xPos(1) = x;
             obj.yPos(1) = y;
             obj.theta(1) = th;
             obj.time = 0;
             obj.index = 1;
             obj.robot = r;
-            obj.L = 0.235;
             
 %             figure(1);
 %             hold on;
@@ -28,16 +45,18 @@ classdef vaderBot
 %             xlim([-0.5 0.5]);
 %             ylim([-0.5 0.5]);
         end
+        
         function drive(obj, lVeloc, rVeloc)
            obj.robot.sendVelocity(lVeloc, rVeloc); 
         end
+        
         function obj = updateState(obj, encoderL, encoderR, dt)
             if (dt ~= 0)
                 obj.time(obj.index+1) = obj.time(obj.index) + dt;
             
                 vL = encoderL/dt/1000;
                 vR = encoderR/dt/1000;
-                w = (vR - vL)/obj.L;
+                w = (vR - vL)/vaderBot.W;
                 V = (vR + vL)/2;
             
                 tempTheta = obj.theta(obj.index) + w*dt/2;
@@ -52,7 +71,6 @@ classdef vaderBot
 %                     obj.yPos(obj.index)]);
 %                 plot(obj.posPlot);
             end
-            
         end
     end
     
