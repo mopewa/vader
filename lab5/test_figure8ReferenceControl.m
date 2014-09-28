@@ -2,7 +2,7 @@
 
 robot = neato('sim');
 
-pause(5);
+% pause(5);
 
 figure(1);
 hold on;
@@ -27,3 +27,5 @@ while(timeStamp < t_final)
     sendVelocity(robot, vl, vr);
     pause(0.01);
 end
+
+robot.shutdown();

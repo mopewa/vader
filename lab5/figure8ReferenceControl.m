@@ -32,6 +32,7 @@ classdef figure8ReferenceControl
                 V = 0;
                 w = 0;
             else
+                timeNow = timeNow - obj.tPause;
                 vr = 0.3 * obj.Kv + 0.14125 * (obj.Kv / obj.Ks) * ...
                     sin((timeNow * obj.Kv)/(2 * obj.Ks));
                 vl = 0.3 * obj.Kv - 0.14125 * (obj.Kv / obj.Ks) * ...
