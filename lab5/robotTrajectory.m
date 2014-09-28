@@ -31,8 +31,7 @@ classdef robotTrajectory
             for i = 1:obj.numSamples
                 time = obj.times(i);
                 [V, w] = referenceControl.computeControl(time);
-                [vl, vr] = vaderBot.VwTovlvr(V, w);
-                obj.velocities(i,:) = [vl, vr];
+                obj.velocities(i,:) = [V, w];
                 prevPose = obj.poses(i,:);
                 prevX = prevPose(1);
                 prevY = prevPose(2);
@@ -46,19 +45,36 @@ classdef robotTrajectory
             end
         end
         
-        function pose = getPoseAtTime(obj, t)
+        function [x, y, theta] = getPoseAtTime(obj, t)
             % returns [x, y, theta] at time t
-            pose = interp1(obj.times, obj.poses, t);
+            if (t > max(obj.times))
+                pose = obj.poses(obj.numSamples+1, :);
+            else
+                pose = interp1(obj.times, obj.poses, t);
+            end
+            x = pose(1);
+            y = pose(2);
+            theta = pose(3);
         end
         
-        function velocity = getVelocityAtTime(obj, t)
-            % returns [vl, vr] at time t
-            velocity = interp1(obj.times, obj.velocities, t);
+        function [V, w] = getVelocityAtTime(obj, t)
+            % returns [V, w] at time t
+            if (t > max(obj.times))
+                velocity = obj.velocities(obj.numSamples, :);
+            else
+                velocity = interp1(obj.times, obj.velocities, t);
+            end
+            V = velocity(1);
+            w = velocity(2);
         end
         
         function distance = getDistanceAtTime(obj, t)
             % returns total distance travelled at time t
-            distance = interp1(obj.times, obj.distances, t);
+            if (t > max(obj.times))
+                distance = obj.distances(obj.numSamples+1);
+            else
+                distance = interp1(obj.times, obj.distances, t);
+            end
         end
     end
     
