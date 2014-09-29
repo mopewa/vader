@@ -6,8 +6,8 @@ classdef controller
     end
     
     properties (Constant)
-        kx = .035;             % x-dimension proportional control
-        ky = .035;             % y-dimension proportional control     
+        kx = 0.009;             % x-dimension proportional control
+        ky = .523;             % y-dimension proportional control     
     end
     
     methods
@@ -25,8 +25,8 @@ classdef controller
             curTheta = r.theta(r.index);
             posErrorWorldFrame = [goalX - curX; goalY - curY];
             % assumes starting theta is 0 and aligns with world frame
-            transformation = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
-            posErrorRobotFrame = transformation * posErrorWorldFrame;
+            transformation = inv([cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)]);
+            posErrorRobotFrame = transformation * posErrorWorldFrame
             control = [controller.kx, 0; 0, controller.ky];
             u_p = control * posErrorRobotFrame;
             e = sqrt((goalX - curX)^2 + (goalY - curY)^2);

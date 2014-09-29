@@ -65,6 +65,15 @@ classdef vaderBot
                 obj.theta(obj.index+1) = tempTheta + w*dt/2;
             
                 obj.index = obj.index+1;
+                
+                if (obj.xPos(obj.index) >= 0.5 || obj.xPos(obj.index) <= -0.5 || obj.yPos(obj.index) >= 0.5 || obj.yPos(obj.index) <= -0.5)
+                    V
+                    w
+                    dt
+                    vL
+                    vR
+                end
+                    
             
 %                 set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
 %                     obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...

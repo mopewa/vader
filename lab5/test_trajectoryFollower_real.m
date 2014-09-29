@@ -5,7 +5,7 @@ global timeStamp;
 clc;
 hold on;
 
-robot = neato('giga');
+robot = neato('milli');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -58,7 +58,7 @@ while (currentTime < referenceControl.getTrajectoryDuration())
     
     r.drive(vl, vr);
     
-    pause(.01);
+    pause(.005);
 end
 
 sendVelocity(robot, 0, 0);

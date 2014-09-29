@@ -4,8 +4,8 @@ classdef figure8ReferenceControl
     % (referenced to zero at the trajectory start) is provided
     
     properties
-        Ks                  % scales velocity
-        Kv                  % scales size of the curve
+        Ks                  % scales size of the curve
+        Kv                  % scales velocity
         tPause              % amount of time to wait before and after motion 
         tFinal              % time needed for figure 8
     end
