@@ -5,6 +5,9 @@ classdef trajectoryFollower
     properties
         robotTrajectory             % the trajectory to follow
         controller                  % provides feedback for the trajectory
+        logV                        % Provides an array for logging velocity values
+        logW                        % Provides an array for logging angular velocity values
+        time                        % Provides an array for logging timestamps
     end
     
     methods
@@ -13,7 +16,7 @@ classdef trajectoryFollower
             obj.controller = controller(robotTrajectory);
         end
         
-        function [vl, vr] = getVelocity(obj, t, vaderBot)
+        function [vl, vr, obj] = getVelocity(obj, t, vaderBot)
             % get feedforward velocity
             [V, w] = obj.robotTrajectory.getVelocityAtTime(t);
             
@@ -21,6 +24,10 @@ classdef trajectoryFollower
             u_p = obj.controller.getVelocity(t, vaderBot);
             V = V + u_p(1);
             w = w + u_p(2);
+            
+            obj.logV = [obj.logV V];
+            obj.logW = [obj.logW w];
+            obj.time = [obj.time t];
             
             [vl, vr] = vaderBot.VwTovlvr(V, w);
         end

@@ -6,8 +6,8 @@ classdef controller
     end
     
     properties (Constant)
-        kx = .01;             % x-dimension proportional control
-        ky = .01;             % y-dimension proportional control     
+        kx = 2;             % x-dimension proportional control
+        ky = 2;             % y-dimension proportional control     
     end
     
     methods
