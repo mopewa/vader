@@ -46,6 +46,7 @@ classdef robotTrajectory
         end
         
         function [x, y, theta] = getPoseAtTime(obj, t)
+            t = t - 0.28;
             % returns [x, y, theta] at time t
             if (t > max(obj.times))
                 pose = obj.poses(obj.numSamples+1, :);

@@ -5,13 +5,13 @@ global timeStamp;
 clc;
 hold on;
 
-robot = neato('milli');
+robot = neato('kilo');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
 
 trapStep = trapezoidalStepReferenceControl(.75, .25, 1, 1, 1);
-figure8 = figure8ReferenceControl(.5, .2, 1);
+figure8 = figure8ReferenceControl(.5, .2, 5);
 
 referenceControl = figure8;
 traj = robotTrajectory(referenceControl, [0,0,0], 0);
@@ -60,6 +60,23 @@ while (currentTime < referenceControl.getTrajectoryDuration())
     
     pause(.005);
 end
+
+eL = leftEncoder - prevLeftEncoder;
+eR = rightEncoder - prevRightEncoder;
+dt = timeStamp - prevTimeStamp;
+    
+prevLeftEncoder = leftEncoder;
+prevRightEncoder = rightEncoder;
+prevTimeStamp = timeStamp;
+    
+r = r.updateState(eL, eR, dt);    
+    
+currentTime = toc(timer);
+[vl, vr, follower] = follower.getVelocity(currentTime, r);
+    
+r.drive(vl, vr);
+    
+pause(1);
 
 sendVelocity(robot, 0, 0);
 delete(lh);
