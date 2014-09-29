@@ -5,7 +5,7 @@ global timeStamp;
 clc;
 hold on;
 
-robot = neato('kilo');
+robot = neato('sim');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -77,11 +77,9 @@ r = r.updateState(eL, eR, dt);
 disp([r.xPos(r.index), r.yPos(r.index)]);
 
 figure(1);
-plot(r.xPos, r.yPos, '-b');
+plot(r.xPos, r.yPos, traj.poses(:,1)', traj.poses(:,2)');
 figure(2);
-plot(follower.time, follower.logV, '-g');
-figure(3);
-plot(follower.time, follower.logW, '-m');
+plot(follower.time, follower.error, '-r');
 
 
 robot.shutdown();

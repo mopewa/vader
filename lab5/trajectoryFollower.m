@@ -7,6 +7,7 @@ classdef trajectoryFollower
         controller                  % provides feedback for the trajectory
         logV                        % Provides an array for logging velocity values
         logW                        % Provides an array for logging angular velocity values
+        error                       % Provides an array for logging trajectory error
         time                        % Provides an array for logging timestamps
     end
     
@@ -21,13 +22,14 @@ classdef trajectoryFollower
             [V, w] = obj.robotTrajectory.getVelocityAtTime(t);
             
             % get feedback adjustment
-            u_p = obj.controller.getVelocity(t, vaderBot);
+            [u_p, e] = obj.controller.getVelocity(t, vaderBot);
             V = V + u_p(1);
             w = w + u_p(2);
             
             obj.logV = [obj.logV V];
             obj.logW = [obj.logW w];
             obj.time = [obj.time t];
+            obj.error = [obj.error e];
             
             [vl, vr] = vaderBot.VwTovlvr(V, w);
         end

@@ -6,8 +6,8 @@ classdef controller
     end
     
     properties (Constant)
-        kx = 2;             % x-dimension proportional control
-        ky = 2;             % y-dimension proportional control     
+        kx = .01;             % x-dimension proportional control
+        ky = .01;             % y-dimension proportional control     
     end
     
     methods
@@ -15,7 +15,7 @@ classdef controller
             obj.robotTrajectory = robotTrajectory;
         end
         
-        function u_p = getVelocity(obj, t, r)
+        function [u_p, e] = getVelocity(obj, t, r)
             % compute the feedback for a robot r that should be
             % following robotTrajectory.
             % Currently, this uses a three degree of freedom linear controller. 
@@ -29,6 +29,7 @@ classdef controller
             posErrorRobotFrame = transformation * posErrorWorldFrame;
             control = [controller.kx, 0; 0, controller.ky];
             u_p = control * posErrorRobotFrame;
+            e = sqrt((goalX - curX)^2 + (goalY - curY)^2);
         end
     end
     
