@@ -5,13 +5,13 @@ global timeStamp;
 clc;
 hold on;
 
-robot = neato('kilo');
+robot = neato('centi');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
 
 trapStep = trapezoidalStepReferenceControl(.75, .25, 1, 1, 1);
-figure8 = figure8ReferenceControl(.5, .2, 5);
+figure8 = figure8ReferenceControl(.8, .2, 5);
 
 referenceControl = figure8;
 traj = robotTrajectory(referenceControl, [0,0,0], 0);
@@ -32,7 +32,7 @@ prevTimeStamp = timeStamp;
 timer = tic;
 currentTime = toc(timer);
 
-while (currentTime < referenceControl.getTrajectoryDuration())
+while (currentTime < referenceControl.getTrajectoryDuration() + 1)
 %     currentTime
     eL = leftEncoder - prevLeftEncoder;
     eR = rightEncoder - prevRightEncoder;
@@ -49,11 +49,9 @@ while (currentTime < referenceControl.getTrajectoryDuration())
     
 %     if (vl > .3)
 %         vl = .3;
-%         vr = vr * .3/vl;
 %     end
 %     if (vr > .3)
 %         vr = .3;
-%         vl = vl * .3/vr;
 %     end
     
     r.drive(vl, vr);
@@ -71,12 +69,12 @@ prevTimeStamp = timeStamp;
     
 r = r.updateState(eL, eR, dt);    
     
-currentTime = toc(timer);
-[vl, vr, follower] = follower.getVelocity(currentTime, r);
-    
-r.drive(vl, vr);
-    
-pause(1);
+% currentTime = toc(timer);
+% [vl, vr, follower] = follower.getVelocity(currentTime, r);
+%     
+% r.drive(vr, vl);
+%     
+% pause(1);
 
 sendVelocity(robot, 0, 0);
 delete(lh);
@@ -91,7 +89,10 @@ prevTimeStamp = timeStamp;
 
 r = r.updateState(eL, eR, dt);
 
-disp([r.xPos(r.index), r.yPos(r.index)]);
+[finalX, finalY, finalTheta] = traj.getPoseAtTime(currentTime)
+xError = r.xPos(r.index)-finalX
+yError = r.yPos(r.index)-finalY
+totalError = sqrt(xError^2 + yError^2)
 
 figure(1);
 plot(r.xPos, r.yPos, traj.poses(:,1)', traj.poses(:,2)');

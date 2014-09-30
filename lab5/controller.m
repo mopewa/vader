@@ -10,8 +10,8 @@ classdef controller
        % ky = 1.175;             % y-dimension proportional control  
 %        kx = 2;
 %        ky = 3;
-         kx = 2;
-         ky = 5;
+         kx = 1;
+         ky = 5.75;
     end
     
     methods
