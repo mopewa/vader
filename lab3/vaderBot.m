@@ -59,11 +59,23 @@ classdef vaderBot
                 w = (vR - vL)/vaderBot.W;
                 V = (vR + vL)/2;
             
-
-                tempTheta = obj.theta(obj.index) + w*dt/2;
-                obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
-                obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;
-                obj.theta(obj.index+1) = tempTheta + w*dt/2;
+                x1 = V*cos(obj.theta(obj.index));
+                y1 = V*sin(obj.theta(obj.index));
+                
+                x2 = V*cos(obj.theta(obj.index)+w*dt/2);
+                y2 = V*sin(obj.theta(obj.index)+w*dt/2);
+                
+                x4 = V*cos(obj.theta(obj.index)+w*dt);
+                y4 = V*sin(obj.theta(obj.index)+w*dt);
+                
+                obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
+                obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
+                obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
+                                
+%                 tempTheta = obj.theta(obj.index) + w*dt/2;
+%                 obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
+%                 obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;
+%                 obj.theta(obj.index+1) = tempTheta + w*dt/2;
             
                 obj.index = obj.index+1;
                     

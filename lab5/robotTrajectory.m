@@ -50,6 +50,8 @@ classdef robotTrajectory
             % returns [x, y, theta] at time t
             if (t > max(obj.times))
                 pose = obj.poses(obj.numSamples+1, :);
+            elseif (t < 0)
+                pose = obj.poses(1, :);
             else
                 pose = interp1(obj.times, obj.poses, t);
             end

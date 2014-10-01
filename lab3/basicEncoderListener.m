@@ -7,8 +7,9 @@ global leftEncoder;
 global rightEncoder;
 global timeStamp;
 
-
-if (event.data.left == 0 || event.data.right == 0)
+if (~isempty(leftEncoder) && ...
+        (isnan(event.data.left) || isnan(event.data.right) || ...
+        abs(event.data.left-leftEncoder) > 1000 || abs(event.data.right-rightEncoder) > 1000))
     disp('Encoder Error Ignore Reading');
 else 
     timeStamp = event.data.header.stamp.secs + ...

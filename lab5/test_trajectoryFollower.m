@@ -44,16 +44,21 @@ while (currentTime < referenceControl.getTrajectoryDuration())
     currentTime = toc(timer);
     [vl, vr, follower] = follower.getVelocity(currentTime, r);
     
-%     if (vl > .3)
-%         vl = .3;
-%         vr = vr * .3/vl;
-%     end
-%     if (vr > .3)
-%         vr = .3;
-%         vl = vl * .3/vr;
-%     end
-    
-    r.drive(vl, vr);
+    if (~isnan(vl))
+
+        if (vl > .3)
+            vl = .3;
+        elseif (vl < -.3)
+            vl = -.3;
+        end
+        if (vr > .3)
+            vr = .3;
+        elseif (vr < -.3)
+            vr = -.3;
+        end
+
+        r.drive(vl, vr);
+    end
     
     pause(.01);
 end
@@ -72,5 +77,8 @@ prevTimeStamp = timeStamp;
 r = r.updateState(eL, eR, dt);
 
 disp([r.xPos(r.index), r.yPos(r.index)]);
+
+figure(1);
+plot(r.xPos, r.yPos, traj.poses(:,1)', traj.poses(:,2)');
 
 robot.shutdown();

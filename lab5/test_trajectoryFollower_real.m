@@ -47,12 +47,16 @@ while (currentTime < referenceControl.getTrajectoryDuration() + 1)
     currentTime = toc(timer);
     [vl, vr, follower] = follower.getVelocity(currentTime, r);
     
-%     if (vl > .3)
-%         vl = .3;
-%     end
-%     if (vr > .3)
-%         vr = .3;
-%     end
+    if (vl > .3)
+        vl = .3;
+    elseif (vl < -.3)
+        vl = -.3;
+    end
+    if (vr > .3)
+        vr = .3;
+    elseif (vr < -.3)
+        vr = -.3;
+    end
     
     r.drive(vl, vr);
     
