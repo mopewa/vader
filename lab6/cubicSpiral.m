@@ -255,9 +255,10 @@ classdef cubicSpiral < handle
                 obj.distArray(i+1) = obj.distArray(i)+ds;
                 s = obj.distArray(i+1);
                 obj.curvArray(i+1) = s*(a+b*s)*(s-sf);
-                obj.poseArray(3,i+1) = obj.poseArray(3,i) + ds*obj.curvArray(i+1);
-                obj.poseArray(1,i+1) = obj.poseArray(1,i) + ds*cos(obj.poseArray(3,i));
-                obj.poseArray(2,i+1) = obj.poseArray(2,i) + ds*sin(obj.poseArray(3,i));
+                tempTheta = obj.poseArray(3,i) + ds*obj.curvArray(i)/2;
+                obj.poseArray(1,i+1) = obj.poseArray(1,i) + ds*cos(tempTheta);
+                obj.poseArray(2,i+1) = obj.poseArray(2,i) + ds*sin(tempTheta);
+                obj.poseArray(3,i+1) = obj.poseArray(3,i) + ds*obj.curvArray(i);
             end
 %             i = obj.numSamples;
 %             s = (i-1)*ds;  
