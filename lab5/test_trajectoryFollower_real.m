@@ -91,11 +91,11 @@ prevLeftEncoder = leftEncoder;
 prevRightEncoder = rightEncoder;
 prevTimeStamp = timeStamp;
 
-r = r.updateState(eL, eR, dt);
+obj = obj.updateState(eL, eR, dt);
 
 [finalX, finalY, finalTheta] = traj.getPoseAtTime(currentTime)
-xError = r.xPos(r.index)-finalX
-yError = r.yPos(r.index)-finalY
+xError = obj.xPos(r.index)-finalX
+yError = obj.yPos(r.index)-finalY
 totalError = sqrt(xError^2 + yError^2)
 
 figure(1);

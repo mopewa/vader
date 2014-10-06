@@ -171,7 +171,7 @@ classdef cubicSpiral < handle
             persistent a1T a2T b1T b2T r1T r2T;
                     
             if(isempty(inited))
-                load('cubicSpirals2mm_015rads','a1Tab','a2Tab','b1Tab','b2Tab','r1Tab','r2Tab');
+                load('cubicSpirals','a1Tab','a2Tab','b1Tab','b2Tab','r1Tab','r2Tab');
                 inited = true;
                 a1T = a1Tab;a2T = a2Tab;b1T = b1Tab;b2T = b2Tab;r1T = r1Tab;r2T = r2Tab;
             end
@@ -347,8 +347,8 @@ classdef cubicSpiral < handle
                 V = Vbase*obj.sgn; % Drive forward or backward as desired.
                 K = obj.curvArray(i);
                 w = K*V;
-                vr = V + robotModel.W2*w;
-                vl = V - robotModel.W2*w;               
+                vr = V + vaderBot.W2*w;
+                vl = V - vaderBot.W2*w;               
                 if(abs(vr) > Vbase)
                     vrNew = Vbase * sign(vr);
                     vl = vl * vrNew/vr;
@@ -362,7 +362,7 @@ classdef cubicSpiral < handle
                 obj.vlArray(i) = vl;
                 obj.vrArray(i) = vr;
                 obj.VArray(i) = (vr + vl)/2.0;
-                obj.wArray(i) = (vr - vl)/robotModel.W;                
+                obj.wArray(i) = (vr - vl)/vaderBot.W;                
             end
             % Now compute the times that are implied by the velocities and
             % the distances.
@@ -452,6 +452,11 @@ classdef cubicSpiral < handle
         
         function dist  = getTrajectoryDistance(obj)
             dist  = obj.distArray(:,obj.numSamples);  
+        end
+        
+        function [V, w] = computeControl(obj, time)
+            V = obj.getVAtTime(time);
+            w = obj.getwAtTime(time);
         end
         
         function V  = getVAtTime(obj,t)
