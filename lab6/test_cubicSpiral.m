@@ -16,3 +16,5 @@ plot(curve.poseArray(1,:), curve.poseArray(2,:), ...
     curve2.poseArray(1,:), curve2.poseArray(2,:));
 
 totalErrorInMm = sqrt((goalX-realX)^2 + (goalY-realY)^2)*1000
+
+cubicSpiral.makeLookupTable(10);

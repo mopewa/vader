@@ -89,6 +89,18 @@ classdef cubicSpiral < handle
                     % Compute the curve. Break out of this loop, and then 
                     % immediately continue to next iteration of the for b loop 
                     % if tmax is exceeded in absolute value at any time.
+                    
+                        s = i*ds;
+                        t = t + (s*(a+b*s))*(s-1)*ds;
+                        x = x + cos(t)*ds;
+                        y = y + sin(t)*ds;
+                        r = r + ((s*(a+b*s))*(s-1))^2*ds;
+                        
+                        if (abs(t) > tMax)
+                            broke = true;
+                            break;
+                        end
+                        
                     end
                     if(broke == true); continue; end;
 
