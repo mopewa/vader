@@ -49,11 +49,13 @@ classdef vaderBot
             obj.index = 1;
             obj.robot = r;
             
+            %{
             figure(1);
             hold on;
             obj.posPlot = plot(obj.xPos, obj.yPos,'r-');
             xlim([-0.5 0.5]);
             ylim([-0.5 0.5]);
+            %}
         end
         
         function drive(obj, lVeloc, rVeloc)
@@ -81,18 +83,21 @@ classdef vaderBot
                 obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
                 obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
                 obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
-                
+              
+                %{
                 tempTheta = obj.theta(obj.index) + w*dt/2;
                 obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
                 obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;
                 obj.theta(obj.index+1) = tempTheta + w*dt/2;
+                %}
                 
                 obj.index = obj.index+1;
-                
+             %{   
                 set(obj.posPlot,'xdata', [get(obj.posPlot,'xdata') ...
                     obj.xPos(obj.index)],'ydata', [get(obj.posPlot,'ydata') ...
                     obj.yPos(obj.index)]);
                 plot(obj.posPlot);
+                %}
             end
         end
         
@@ -153,10 +158,10 @@ classdef vaderBot
             yError = obj.yPos(obj.index)-finalY;
             totalError = sqrt(xError^2 + yError^2)
             
-            %figure(1);
-            %plot(obj.xPos, obj.yPos, traj.poses(:,1)', traj.poses(:,2)');
-            %figure(2);
-            %plot(follower.time, follower.error, '-r');
+            figure(1);
+            plot(obj.xPos, obj.yPos, traj.poses(:,1)', traj.poses(:,2)');
+            figure(2);
+            plot(follower.time, follower.error, '-r');
         end
     end
     

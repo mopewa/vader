@@ -31,9 +31,13 @@ classdef controller
             % assumes starting theta is 0 and aligns with world frame
             transformation = inv([cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)]);
             posErrorRobotFrame = transformation * posErrorWorldFrame;
-            control = [controller.kx, 0; 0, controller.ky];
-            u_p = control * posErrorRobotFrame;
             e = sqrt((goalX - curX)^2 + (goalY - curY)^2);
+            if (e <= .05)
+                control = [controller.kx, 0; 0, 0];
+            else
+                control = [controller.kx, 0; 0, controller.ky];
+            end
+            u_p = control * posErrorRobotFrame;
         end
     end
     
