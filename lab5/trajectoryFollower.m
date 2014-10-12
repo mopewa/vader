@@ -4,18 +4,20 @@ classdef trajectoryFollower
     
     properties
         robotTrajectory             % the trajectory to follow
-        controller                  % provides feedback for the trajectory
+        feedbackController          % provides feedback for the trajectory
         logV                        % Provides an array for logging velocity values
         logW                        % Provides an array for logging angular velocity values
         error                       % Provides an array for logging trajectory error
         time                        % Provides an array for logging timestamps
-        feedback                    % Switch to turn on and off feedback 
+        feedback                    % Switch to turn on and off feedback
+        startPose
     end
     
     methods
-        function obj = trajectoryFollower(robotTrajectory)
+        function obj = trajectoryFollower(robotTrajectory, startPose)
             obj.robotTrajectory = robotTrajectory;
-            obj.controller = controller(robotTrajectory);
+            obj.feedbackController = controller(robotTrajectory, startPose);
+            obj.startPose = startPose;
             obj.feedback = true;
         end
         
@@ -24,12 +26,12 @@ classdef trajectoryFollower
             [V, w] = obj.robotTrajectory.getVelocityAtTime(t);
             
             % get feedback adjustment
-            if (obj.feedback) 
-                [u_p, e] = obj.controller.getVelocity(t, vaderBot);
+            if (obj.feedback)
+                [u_p, e] = obj.feedbackController.getVelocity(t, vaderBot);
                 V = V + u_p(1);
                 w = w + u_p(2);
             end
-                
+            
             obj.logV = [obj.logV V];
             obj.logW = [obj.logW w];
             obj.time = [obj.time t];
