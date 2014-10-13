@@ -60,6 +60,11 @@ classdef vaderBot
         end
         
         function drive(obj, lVeloc, rVeloc)
+            if lVeloc > .3 || rVeloc > .3
+                disp('adjusting velocity');
+            end
+            lVeloc = min(lVeloc, .3);
+            rVeloc = min(rVeloc, .3);
             obj.robot.sendVelocity(lVeloc, rVeloc);
         end
         
@@ -102,7 +107,7 @@ classdef vaderBot
             end
         end
         
-        function obj = executeTrajectory(obj, trajectory)
+        function [obj, totalError] = executeTrajectory(obj, trajectory)
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
@@ -163,6 +168,7 @@ classdef vaderBot
             totalError = sqrt(xError^2 + yError^2)
             
             figure(5);
+            hold on;
             plot(obj.xPos, obj.yPos, traj.poses(:,1)', traj.poses(:,2)');
             figure(6);
             plot(follower.time, follower.error, '-r');

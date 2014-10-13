@@ -12,7 +12,7 @@ classdef controller
         %        kx = 2;
         %        ky = 3;
         kx = 1;
-        ky = 5.75;
+        ky = 6;
     end
     
     methods
