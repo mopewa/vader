@@ -1,7 +1,7 @@
 clc;
 hold on;
 
-robot = neato('sim');
+robot = neato('kilo');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -26,7 +26,4 @@ path3.planVelocities(.2);
 
 r = r.executeTrajectory(path3);
 pause(1);
-
-
-robot.shutdown();
 
