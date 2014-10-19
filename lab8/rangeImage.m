@@ -39,7 +39,7 @@ classdef rangeImage < handle
                 end
             end
         end
-       
+              
         function removeBadPoints(obj, maxRange)
             % takes all points above and below two range thresholds
             % out of the arrays. This is a convenience but the result
@@ -68,6 +68,25 @@ classdef rangeImage < handle
             plot(obj.xArray, obj.yArray)
         end
         
+        function [x, y, theta] = getBestLine(obj, maxLen)
+            bestErr = intmax;
+            bestTh = 0;
+            bestI = 0;
+            for i = 1:size(obj.tArray,2)
+                [err, numPixels, th] = obj.findLineCandidate(i, maxLen);
+                if (err < bestErr && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
+                    disp(['found better ', int2str(i)]);
+                    disp(obj.rArray(i));
+                    bestErr = err;
+                    bestTh = th;
+                    bestI = i;
+                end
+            end
+            x = obj.xArray(bestI);
+            y = obj.yArray(bestI);
+            theta = bestTh;
+        end
+        
         function [err, num, th] = findLineCandidate(obj,middle,maxLen)
             % Find the longest sequence of pixels centered at pixel
             % “middle” whose endpoints are separated by a length less
@@ -90,7 +109,7 @@ classdef rangeImage < handle
                 yRight = obj.yArray(rightIndex);
                 len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                 numpixels = numpixels + 2;
-                if (numpixels > length(obj.xArray))
+                if (numpixels > length(obj.xArray)/2)
                     numpixels = numpixels - 2;
                     leftIndex = obj.inc(leftIndex);
                     rightIndex = obj.dec(rightIndex);
@@ -103,13 +122,37 @@ classdef rangeImage < handle
                 leftIndex = obj.inc(leftIndex);
                 rightIndex = obj.dec(rightIndex);
                 numpixels = numpixels - 2;
+                if (leftIndex == rightIndex)
+                    num = 0;
+                    err = NaN;
+                    th = 1;
+                    return;
+                end
             end
             
             num = numpixels;
+%             th = -atan2(xRight-xLeft, yRight-yLeft);
             th = atan2(yRight-yLeft, xRight-xLeft);
+            thPos = th+pi/2;
+            thNeg = th-pi/2;
+            disp([obj.tArray(middle), thPos, thNeg]);
+            direc = obj.tArray(middle);
+            posErr = abs(thPos-direc);
+            if posErr > pi
+                posErr = 2*pi-posErr;
+            end
+            negErr = abs(thNeg-direc);
+            if negErr > pi
+                negErr = 2*pi-negErr;
+            end
+            if (posErr < negErr)
+                th = thPos;
+            else
+                th = thNeg;
+            end
             
             % figure out line equation using 2 endpoints
-            lineEquation = polyfit([xLeft, xRight], [yLeft, yRight], 1);
+            [lineEquation, S, mu] = polyfit([xLeft, xRight], [yLeft, yRight], 1);
             
             % make arrays of actual x and y values
             if (leftIndex > rightIndex)
@@ -119,12 +162,12 @@ classdef rangeImage < handle
             else
                 xActual = obj.xArray(leftIndex:rightIndex);
                 yActual = obj.yArray(leftIndex:rightIndex);
-                r = obj.rArray(leftIndex:rightIndex);
+                r = obj.rArray( leftIndex:rightIndex);
             end
             
             % make arrays of line x and y values
             xLine = linspace(xLeft, xRight, numpixels);
-            yLine = polyval(lineEquation, xLine);
+            yLine = polyval(lineEquation, xLine, S, mu);
             
             toIgnore = find(r == 0);
             
