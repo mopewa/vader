@@ -12,6 +12,6 @@ rBack = rangeImage(back, 1, false);
 [err, num, th] = rFront.findLineCandidate(3, 5);
 
 %%
-test = [0 286.5 143.2 95.54 71.68 57.37];
+test = [0 286.5 143.2 95.54 71.68 57.37]; %47.83];
 rTest = rangeImage(test, 1, false);
-[err, num, th] = rTest.findLineCandidate(4, 225);
+[err, num, th] = rTest.findLineCandidate(4, 2);

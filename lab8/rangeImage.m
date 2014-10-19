@@ -87,7 +87,7 @@ classdef rangeImage < handle
             before = middle;
             after = middle;
             numpixels = 1;
-            while (len < maxLen)
+            while (len <= maxLen)
                 before = obj.dec(before);
                 after = obj.inc(after);
                 xbefore = obj.xArray(before);
@@ -96,9 +96,20 @@ classdef rangeImage < handle
                 yafter = obj.yArray(after);
                 len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
                 numpixels = numpixels + 2;
+                if (numpixels > length(obj.xArray))
+                    numpixels = numpixels - 2;
+                    before = obj.inc(before);
+                    after = obj.dec(after);
+                    xbefore = obj.xArray(before);
+                    ybefore = obj.yArray(before);
+                    xafter = obj.xArray(after);
+                    yafter = obj.yArray(after);
+                    len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
+                    break;
+                end
             end
             
-            while (len > maxLen || obj.rArray(obj.dec(before)) == 0 || obj.rArray(obj.inc(after)) == 0)
+            while (len > maxLen || obj.rArray(before) == 0 || obj.rArray(after) == 0)
                 before = obj.inc(before);
                 after = obj.dec(after);
                 xbefore = obj.xArray(before);
