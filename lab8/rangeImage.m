@@ -12,6 +12,8 @@ classdef rangeImage < handle
         tArray = [];
         xArray = [];
         yArray = [];
+        originalRanges = [];
+        originalSkip = 1;
         numPix;
     end
     
@@ -20,6 +22,8 @@ classdef rangeImage < handle
             % Constructs a rangeImage for the supplied data.
             % Converts the data to rectangular coordinates
             if(nargin == 3)
+                originalRanges = ranges;
+                originalSkip = skip;
                 n=0;
                 for i=1:skip:length(ranges)
                     n = n + 1;
@@ -33,14 +37,23 @@ classdef rangeImage < handle
             end
         end
         
-        function removeBadPoints(obj)
+        function reconstructPoints()
+            for i=1:originalSkip:length(originalRanges)
+                obj.rArray(n) = originalRanges(i);
+                obj.tArray(n) = (i-1)*(pi/180);
+                obj.xArray(n) = originalRanges(i)*cos(obj.tArray(n));
+                obj.yArray(n) = originalRanges(i)*sin(obj.tArray(n));
+            end
+        end
+        
+        function removeBadPoints(obj, maxRange)
             % takes all points above and below two range thresholds
             % out of the arrays. This is a convenience but the result
             % should not be used by any routine that expects the points
             % to be equally separated in angle. The operation is done
             % inline and removed data is deleted.
             badPoints = find(obj.rArray < obj.minUsefulRange | ...
-                obj.rArray > obj.maxRangeForTarget);
+                obj.rArray > maxRange);
             obj.rArray(badPoints) = [];
             obj.tArray(badPoints) = [];
             obj.xArray(badPoints) = [];
@@ -50,20 +63,18 @@ classdef rangeImage < handle
         function plotRvsTh(obj, maxRange)
             % plot the range image after removing all points exceeding
             % maxRange
-            obj.maxRangeForTarget = maxRange;
-            removeBadPoints();
-            plot(obj.rArray, obj.tArray);
+            obj.removeBadPoints(maxRange);
+            plot(obj.rArray, obj.tArray)
         end
         
         function plotXvsY(obj, maxRange)
             % plot the range image after removing all points exceeding
             % maxRange
-            obj.maxRangeForTarget = maxRange;
-            removeBadPoints();
-            plot(obj.xArray, obj.yArray);
+            obj.removeBadPoints(maxRange);
+            plot(obj.xArray, obj.yArray)
         end
         
-        function [err num th] = findLineCandidate(obj,middle,maxLen)
+        function [err, num, th] = findLineCandidate(obj,middle,maxLen)
             % Find the longest sequence of pixels centered at pixel
             % “middle” whose endpoints are separated by a length less
             % than the provided maximum. Return the line fit error, the
@@ -74,17 +85,24 @@ classdef rangeImage < handle
             after = middle;
             numpixels = 1;
             while (len < maxLen)
-                before = dec(before);
-                after = inc(after);
-                [xbefore, ybefore, ~] = irToXy(obj.tArray(before), obj.rArray(before));
-                [xafter, yafter, ~] = irToXy(obj.tArray(after), obj.rArray(after));
+                before = obj.dec(before);
+                after = obj.inc(after);
+                xbefore = obj.xArray(before);
+                ybefore = obj.yArray(before);
+                xafter = obj.xArray(after);
+                yafter = obj.yArray(after);
                 len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
                 numpixels = numpixels + 2;
             end
             
-            while (obj.rArray(dec(before)) == 0 || obj.rArray(inc(after)) == 0)
-                before = inc(before);
-                after = dec(after);
+            while (len > maxLen || obj.rArray(obj.dec(before)) == 0 || obj.rArray(obj.inc(after)) == 0)
+                before = obj.inc(before);
+                after = obj.dec(after);
+                xbefore = obj.xArray(before);
+                ybefore = obj.yArray(before);
+                xafter = obj.xArray(after);
+                yafter = obj.yArray(after);
+                len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
                 numpixels = numpixels - 2;
             end
             
@@ -105,7 +123,7 @@ classdef rangeImage < handle
             xActual(toIgnore) = [];
             yActual(toIgnore) = [];
             xLine(toIgnore) = [];
-            yLine(toIgnore) = [];          
+            yLine(toIgnore) = [];
             
             xError = (xLine - xActual).^2;
             yError = (yLine - yActual).^2;
@@ -146,25 +164,6 @@ classdef rangeImage < handle
             % Convert a to 0:3 and add b (which is already 0:3).
             % Convert the result back by adding 1.
             out = mod((a-1)+b,obj.numPix)+1;
-        end
-        
-        function [ x, y, theta] = irToXy(i, r)
-            % irToXy finds position and bearing of a range pixel endpoint
-            % Finds the position and bearing of the endpoint of a range pixel in the plane.
-            start_angle = 0;
-            angle_spacing = 1;
-            
-            theta = start_angle + (i-1) * angle_spacing;
-            
-            x = r * cos(theta * (pi/180));
-            
-            y = r * sin(theta * (pi/180));
-            
-            % theta needs to be from -180 to 180
-            
-            if (theta > 180)
-                theta = theta - 360;
-            end
         end
     end
 end
