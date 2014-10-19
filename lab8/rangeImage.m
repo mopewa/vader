@@ -33,16 +33,16 @@ classdef rangeImage < handle
                     obj.yArray(n) = ranges(i)*sin(obj.tArray(n));
                 end
                 obj.numPix = n;
-                if cleanFlag; obj.removeBadPoints(); end;
+                if cleanFlag; obj.removeBadPoints(obj.maxUsefulRange); end;
             end
         end
         
         function reconstructPoints(obj)
             for i=1:obj.originalSkip:length(obj.originalRanges)
-                obj.rArray(n) = obj.originalRanges(i);
-                obj.tArray(n) = (i-1)*(pi/180);
-                obj.xArray(n) = obj.originalRanges(i)*cos(obj.tArray(n));
-                obj.yArray(n) = obj.originalRanges(i)*sin(obj.tArray(n));
+                obj.rArray(i) = obj.originalRanges(i);
+                obj.tArray(i) = (i-1)*(pi/180);
+                obj.xArray(i) = obj.originalRanges(i)*cos(obj.tArray(i));
+                obj.yArray(i) = obj.originalRanges(i)*sin(obj.tArray(i));
             end
         end
         
@@ -80,64 +80,71 @@ classdef rangeImage < handle
             % than the provided maximum. Return the line fit error, the
             % number of pixels participating, and the angle of
             % the line relative to the sensor.
-            if (size(obj.rArray) ~= size(obj.originalRanges))
+           %{
+            if (length(obj.rArray) ~= length(obj.originalRanges))
                 obj.reconstructPoints();
             end
+            %}
+            %  search in both directions, two pixels at a time, to find two
+            % points separated by a maximum length less than maxLen
             len = 0;
-            before = middle;
-            after = middle;
+            leftIndex = middle;
+            rightIndex = middle;
             numpixels = 1;
             while (len <= maxLen)
-                before = obj.dec(before);
-                after = obj.inc(after);
-                xbefore = obj.xArray(before);
-                ybefore = obj.yArray(before);
-                xafter = obj.xArray(after);
-                yafter = obj.yArray(after);
-                len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
+                leftIndex = obj.dec(leftIndex);
+                rightIndex = obj.inc(rightIndex);
+                xLeft = obj.xArray(leftIndex);
+                yLeft = obj.yArray(leftIndex);
+                xRight = obj.xArray(rightIndex);
+                yRight = obj.yArray(rightIndex);
+                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                 numpixels = numpixels + 2;
                 if (numpixels > length(obj.xArray))
                     numpixels = numpixels - 2;
-                    before = obj.inc(before);
-                    after = obj.dec(after);
-                    xbefore = obj.xArray(before);
-                    ybefore = obj.yArray(before);
-                    xafter = obj.xArray(after);
-                    yafter = obj.yArray(after);
-                    len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
+                    leftIndex = obj.inc(leftIndex);
+                    rightIndex = obj.dec(rightIndex);
+                    xLeft = obj.xArray(leftIndex);
+                    yLeft = obj.yArray(leftIndex);
+                    xRight = obj.xArray(rightIndex);
+                    yRight = obj.yArray(rightIndex);
+                    len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                     break;
                 end
             end
             
-            while (len > maxLen || obj.rArray(before) == 0 || obj.rArray(after) == 0)
-                before = obj.inc(before);
-                after = obj.dec(after);
-                xbefore = obj.xArray(before);
-                ybefore = obj.yArray(before);
-                xafter = obj.xArray(after);
-                yafter = obj.yArray(after);
-                len = sqrt((xbefore-xafter)^2 + (ybefore-yafter)^2);
+            % make sure endpoints aren't zero
+            while (len > maxLen || obj.rArray(leftIndex) == 0 || obj.rArray(rightIndex) == 0)
+                leftIndex = obj.inc(leftIndex);
+                rightIndex = obj.dec(rightIndex);
+                xLeft = obj.xArray(leftIndex);
+                yLeft = obj.yArray(leftIndex);
+                xRight = obj.xArray(rightIndex);
+                yRight = obj.yArray(rightIndex);
+                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                 numpixels = numpixels - 2;
             end
             
             num = numpixels;
-            th = atan2(yafter-ybefore, xafter-xbefore);
+            th = atan2(yRight-yLeft, xRight-xLeft);
             
-            lineEquation = polyfit([xbefore, xafter], [ybefore, yafter], 1);
+            % figure out line equation using 2 endpoints
+            lineEquation = polyfit([xLeft, xRight], [yLeft, yRight], 1);
             
-            if (before > after)
-                xActual = [obj.xArray(before:360), obj.xArray(1:after)];
-                yActual = [obj.yArray(before:360), obj.yArray(1:after)];
-                r = [obj.rArray(before:360), obj.rArray(1:after)];
+            % make arrays of actual x and y values
+            if (leftIndex > rightIndex)
+                xActual = [obj.xArray(leftIndex:360), obj.xArray(1:rightIndex)];
+                yActual = [obj.yArray(leftIndex:360), obj.yArray(1:rightIndex)];
+                r = [obj.rArray(leftIndex:360), obj.rArray(1:rightIndex)];
             else
-                xActual = obj.xArray(before:after);
-                yActual = obj.yArray(before:after);
-                r = obj.rArray(before:after);
+                xActual = obj.xArray(leftIndex:rightIndex);
+                yActual = obj.yArray(leftIndex:rightIndex);
+                r = obj.rArray(leftIndex:rightIndex);
             end
             
-            xLine = linspace(xbefore, xafter, numpixels);
+            % make arrays of line x and y values
+            xLine = linspace(xLeft, xRight, numpixels);
             yLine = polyval(lineEquation, xLine);
-            
             
             toIgnore = find(r == 0);
             
@@ -149,10 +156,8 @@ classdef rangeImage < handle
             xError = (xLine - xActual).^2;
             yError = (yLine - yActual).^2;
             
-            err = 0;
-            for i=1:length(xLine)
-                err = err + sqrt(xError(i) + yError(i));
-            end
+            err = sum((xError + yError).^(1/2));
+            
             err = err/numpixels;
         end
         
