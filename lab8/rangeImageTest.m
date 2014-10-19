@@ -2,14 +2,14 @@
 load('rangeData', 'front','robotLeft', 'back', 'robotRight');
 
 rFront = rangeImage(front, 1, true);
-rLeft = rangeImage(robotLeft, 1, false);
-rRight = rangeImage(robotRight,1,false);
-rBack = rangeImage(back, 1, false);
+rLeft = rangeImage(robotLeft, 1, true);
+rRight = rangeImage(robotRight,1,true);
+rBack = rangeImage(back, 1, true);
 
 
 %% Test rangeImage
 
-[err, num, th] = rFront.findLineCandidate(3, 5);
+[err, num, th] = rBack.findLineCandidate(3, 2);
 
 %%
 test = [0 286.5 143.2 95.54 71.68 57.37]; 

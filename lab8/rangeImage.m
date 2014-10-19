@@ -33,19 +33,13 @@ classdef rangeImage < handle
                     obj.yArray(n) = ranges(i)*sin(obj.tArray(n));
                 end
                 obj.numPix = n;
-                if cleanFlag; obj.removeBadPoints(obj.maxUsefulRange); end;
+                if cleanFlag 
+                    obj.removeBadPoints(obj.maxUsefulRange);
+                    obj.numPix = length(obj.rArray);
+                end
             end
         end
-        
-        function reconstructPoints(obj)
-            for i=1:obj.originalSkip:length(obj.originalRanges)
-                obj.rArray(i) = obj.originalRanges(i);
-                obj.tArray(i) = (i-1)*(pi/180);
-                obj.xArray(i) = obj.originalRanges(i)*cos(obj.tArray(i));
-                obj.yArray(i) = obj.originalRanges(i)*sin(obj.tArray(i));
-            end
-        end
-        
+       
         function removeBadPoints(obj, maxRange)
             % takes all points above and below two range thresholds
             % out of the arrays. This is a convenience but the result
@@ -80,18 +74,14 @@ classdef rangeImage < handle
             % than the provided maximum. Return the line fit error, the
             % number of pixels participating, and the angle of
             % the line relative to the sensor.
-           %{
-            if (length(obj.rArray) ~= length(obj.originalRanges))
-                obj.reconstructPoints();
-            end
-            %}
+            
             %  search in both directions, two pixels at a time, to find two
             % points separated by a maximum length less than maxLen
             len = 0;
             leftIndex = middle;
             rightIndex = middle;
             numpixels = 1;
-            while (len <= maxLen)
+            while (len < maxLen)
                 leftIndex = obj.dec(leftIndex);
                 rightIndex = obj.inc(rightIndex);
                 xLeft = obj.xArray(leftIndex);
@@ -104,24 +94,14 @@ classdef rangeImage < handle
                     numpixels = numpixels - 2;
                     leftIndex = obj.inc(leftIndex);
                     rightIndex = obj.dec(rightIndex);
-                    xLeft = obj.xArray(leftIndex);
-                    yLeft = obj.yArray(leftIndex);
-                    xRight = obj.xArray(rightIndex);
-                    yRight = obj.yArray(rightIndex);
-                    len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                     break;
                 end
             end
             
             % make sure endpoints aren't zero
-            while (len > maxLen || obj.rArray(leftIndex) == 0 || obj.rArray(rightIndex) == 0)
+            while (obj.rArray(leftIndex) == 0 || obj.rArray(rightIndex) == 0)
                 leftIndex = obj.inc(leftIndex);
                 rightIndex = obj.dec(rightIndex);
-                xLeft = obj.xArray(leftIndex);
-                yLeft = obj.yArray(leftIndex);
-                xRight = obj.xArray(rightIndex);
-                yRight = obj.yArray(rightIndex);
-                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                 numpixels = numpixels - 2;
             end
             
@@ -133,9 +113,9 @@ classdef rangeImage < handle
             
             % make arrays of actual x and y values
             if (leftIndex > rightIndex)
-                xActual = [obj.xArray(leftIndex:360), obj.xArray(1:rightIndex)];
-                yActual = [obj.yArray(leftIndex:360), obj.yArray(1:rightIndex)];
-                r = [obj.rArray(leftIndex:360), obj.rArray(1:rightIndex)];
+                xActual = [obj.xArray(leftIndex:obj.numPix), obj.xArray(1:rightIndex)];
+                yActual = [obj.yArray(leftIndex:obj.numPix), obj.yArray(1:rightIndex)];
+                r = [obj.rArray(leftIndex:obj.numPix), obj.rArray(1:rightIndex)];
             else
                 xActual = obj.xArray(leftIndex:rightIndex);
                 yActual = obj.yArray(leftIndex:rightIndex);
