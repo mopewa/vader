@@ -22,8 +22,8 @@ classdef rangeImage < handle
             % Constructs a rangeImage for the supplied data.
             % Converts the data to rectangular coordinates
             if(nargin == 3)
-                originalRanges = ranges;
-                originalSkip = skip;
+                obj.originalRanges = ranges;
+                obj.originalSkip = skip;
                 n=0;
                 for i=1:skip:length(ranges)
                     n = n + 1;
@@ -37,12 +37,12 @@ classdef rangeImage < handle
             end
         end
         
-        function reconstructPoints()
-            for i=1:originalSkip:length(originalRanges)
-                obj.rArray(n) = originalRanges(i);
+        function reconstructPoints(obj)
+            for i=1:obj.originalSkip:length(obj.originalRanges)
+                obj.rArray(n) = obj.originalRanges(i);
                 obj.tArray(n) = (i-1)*(pi/180);
-                obj.xArray(n) = originalRanges(i)*cos(obj.tArray(n));
-                obj.yArray(n) = originalRanges(i)*sin(obj.tArray(n));
+                obj.xArray(n) = obj.originalRanges(i)*cos(obj.tArray(n));
+                obj.yArray(n) = obj.originalRanges(i)*sin(obj.tArray(n));
             end
         end
         
@@ -80,6 +80,9 @@ classdef rangeImage < handle
             % than the provided maximum. Return the line fit error, the
             % number of pixels participating, and the angle of
             % the line relative to the sensor.
+            if (size(obj.rArray) ~= size(obj.originalRanges))
+                obj.reconstructPoints();
+            end
             len = 0;
             before = middle;
             after = middle;
@@ -111,13 +114,20 @@ classdef rangeImage < handle
             
             lineEquation = polyfit([xbefore, xafter], [ybefore, yafter], 1);
             
-            xActual = obj.xArray(before, after);
-            yActual = obj.yArray(before, after);
+            if (before > after)
+                xActual = [obj.xArray(before:360), obj.xArray(1:after)];
+                yActual = [obj.yArray(before:360), obj.yArray(1:after)];
+                r = [obj.rArray(before:360), obj.rArray(1:after)];
+            else
+                xActual = obj.xArray(before:after);
+                yActual = obj.yArray(before:after);
+                r = obj.rArray(before:after);
+            end
             
             xLine = linspace(xbefore, xafter, numpixels);
             yLine = polyval(lineEquation, xLine);
             
-            r = obj.rArray(before, after);
+            
             toIgnore = find(r == 0);
             
             xActual(toIgnore) = [];
