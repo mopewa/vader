@@ -1,7 +1,6 @@
 clc;
-hold on;
 
-robot = neato('kilo');
+robot = neato('femto');
 pause(5);
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
@@ -9,22 +8,32 @@ lh = event.listener(robot.encoders, 'OnMessageReceived', ...
 
 r = vaderBot(0, 0, 0, robot);
 
+foundLine = 0;
 robot.startLaser();
 pause(5);
-ranges = robot.laser.data.ranges
-robot.stopLaser();
 
-image = rangeImage(ranges, 1, 1);
-[x,y,th] = image.getBestLine(12.5)
-image.plotXvsY(1.5); 
+while (~foundLine)
+    ranges = robot.laser.data.ranges;
+
+    image = rangeImage(ranges, 1, 1);
+    [x,y,th] = image.getBestLine(.5125)
+    foundLine = x || y;
+end
+robot.stopLaser();
+% image.plotXvsY(1.5); 
 % image.plotRvsTh(1);
 
-[xNew, yNew, thNew] = targetTransform(x,y, th)
+if (x == 0 && y == 0)
+    disp('Did not see a line');
+else 
 
-path = cubicSpiral.planTrajectory(xNew, yNew, thNew, 1);
+    [xNew, yNew, thNew] = targetTransform(x,y, th)
 
-path.planVelocities(.1);
-path.getFinalPose()
+    path = cubicSpiral.planTrajectory(xNew, yNew, thNew, 1);
 
-[r, err] = r.executeTrajectory(path);
+    path.planVelocities(.2);
+    path.getFinalPose()
+
+    [r, err] = r.executeTrajectory(path);
+end
 

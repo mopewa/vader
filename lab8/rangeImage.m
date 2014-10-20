@@ -2,7 +2,7 @@ classdef rangeImage < handle
     %rangeImage Stores a 1D range image and provides related services.
     
     properties(Constant)
-        maxUsefulRange = 2.0;
+        maxUsefulRange = 1.5;
         minUsefulRange = 0.05;
         maxRangeForTarget = 1.0;
     end
@@ -73,18 +73,25 @@ classdef rangeImage < handle
             bestTh = 0;
             bestI = 0;
             for i = 1:size(obj.tArray,2)
-                [err, numPixels, th] = obj.findLineCandidate(i, maxLen);
+                [err, numPixels, th] = obj.findLineCandidate(i, maxLen)
+                disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
                 if (err < bestErr && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
-                    disp(['found better ', int2str(i)]);
-                    disp(obj.rArray(i));
+                    disp(['***********found better********** ', int2str(i)]);
+%                     disp(obj.rArray(i));
                     bestErr = err;
                     bestTh = th;
                     bestI = i;
                 end
             end
-            x = obj.xArray(bestI);
-            y = obj.yArray(bestI);
-            theta = bestTh;
+            if bestI == 0
+                x = 0;
+                y = 0;
+                theta = 0;
+            else
+                x = obj.xArray(bestI);
+                y = obj.yArray(bestI);
+                theta = bestTh;
+            end
         end
         
         function [err, num, th] = findLineCandidate(obj,middle,maxLen)
@@ -107,16 +114,24 @@ classdef rangeImage < handle
                 yLeft = obj.yArray(leftIndex);
                 xRight = obj.xArray(rightIndex);
                 yRight = obj.yArray(rightIndex);
-                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
+                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2)
                 numpixels = numpixels + 2;
-                if (numpixels > length(obj.xArray)/2)
+                if (numpixels > length(obj.xArray))
                     numpixels = numpixels - 2;
                     leftIndex = obj.inc(leftIndex);
                     rightIndex = obj.dec(rightIndex);
                     break;
                 end
+                len < maxLen
             end
             
+            disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
+
+            if (numpixels > 1)
+                numpixels = numpixels-2;
+                leftIndex = obj.inc(leftIndex);
+                rightIndex = obj.dec(rightIndex);
+            end
             % make sure endpoints aren't zero
             while (obj.rArray(leftIndex) == 0 || obj.rArray(rightIndex) == 0)
                 leftIndex = obj.inc(leftIndex);
@@ -126,16 +141,33 @@ classdef rangeImage < handle
                     num = 0;
                     err = NaN;
                     th = 1;
+                    disp('failing here');
                     return;
                 end
             end
             
+            xLeft = obj.xArray(leftIndex);
+            yLeft = obj.yArray(leftIndex);
+            xRight = obj.xArray(rightIndex);
+            yRight = obj.yArray(rightIndex);
+            len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
+            
+            disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
+
+            if (len > 2*maxLen || numpixels == 1)
+                num = 0;
+                err = NaN;
+                th = 1;
+                disp('returning here');
+                return;
+            end
+            
             num = numpixels;
-%             th = -atan2(xRight-xLeft, yRight-yLeft);
+%             disp([xLeft, xRight, yLeft, yRight]);
             th = atan2(yRight-yLeft, xRight-xLeft);
             thPos = th+pi/2;
             thNeg = th-pi/2;
-            disp([obj.tArray(middle), thPos, thNeg]);
+%             disp([obj.tArray(middle), thPos, thNeg]);
             direc = obj.tArray(middle);
             posErr = abs(thPos-direc);
             if posErr > pi
@@ -176,12 +208,12 @@ classdef rangeImage < handle
             xLine(toIgnore) = [];
             yLine(toIgnore) = [];
             
-            xError = (xLine - xActual).^2;
-            yError = (yLine - yActual).^2;
+            xError = (xLine - xActual).^2
+            yError = (yLine - yActual).^2
             
-            err = sum((xError + yError).^(1/2));
+            err = sum((xError + yError).^(1/2))
             
-            err = err/numpixels;
+            err = err/(numpixels-2);
         end
         
         function num = numPixels(obj)
