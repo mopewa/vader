@@ -16,10 +16,12 @@ robot.stopLaser();
 
 image = rangeImage(ranges, 1, 1);
 [x,y,th] = image.getBestLine(12.5)
-image.plotXvsY(1.5);
+image.plotXvsY(1.5); 
 % image.plotRvsTh(1);
 
-path = cubicSpiral.planTrajectory(x, y, th, 1);
+[xNew, yNew, thNew] = targetTransform(x,y, th)
+
+path = cubicSpiral.planTrajectory(xNew, yNew, thNew, 1);
 
 path.planVelocities(.1);
 path.getFinalPose()
