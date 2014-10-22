@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('femto');
+robot = neato('kilo');
 pause(5);
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...

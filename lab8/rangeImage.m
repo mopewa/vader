@@ -68,33 +68,39 @@ classdef rangeImage < handle
             plot(obj.xArray, obj.yArray)
         end
         
-        function [x, y, theta] = getBestLine(obj, maxLen)
+        function [bestX, bestY, bestTh] = getBestLine(obj, maxLen)
             bestErr = intmax;
             bestTh = 0;
             bestI = 0;
+            bestLen = 0;
+            bestX = 0;
+            bestY = 0;
             for i = 1:size(obj.tArray,2)
-                [err, numPixels, th] = obj.findLineCandidate(i, maxLen)
+                [err, ~, th, len, x, y] = obj.findLineCandidate(i, maxLen)
                 disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
-                if (err < bestErr && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
+                if (err < bestErr && len > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
                     disp(['***********found better********** ', int2str(i)]);
 %                     disp(obj.rArray(i));
                     bestErr = err;
                     bestTh = th;
                     bestI = i;
+                    bestLen = len;
+                    bestX = x;
+                    bestY = y;
                 end
             end
-            if bestI == 0
-                x = 0;
-                y = 0;
-                theta = 0;
-            else
-                x = obj.xArray(bestI);
-                y = obj.yArray(bestI);
-                theta = bestTh;
-            end
+%             if bestI == 0
+%                 x = 0;
+%                 y = 0;
+%                 theta = 0;
+%             else
+%                 x = obj.xArray(bestI);
+%                 y = obj.yArray(bestI);
+%                 theta = bestTh;
+%             end
         end
         
-        function [err, num, th] = findLineCandidate(obj,middle,maxLen)
+        function [err, num, th, len, x, y] = findLineCandidate(obj,middle,maxLen)
             % Find the longest sequence of pixels centered at pixel
             % “middle” whose endpoints are separated by a length less
             % than the provided maximum. Return the line fit error, the
@@ -208,12 +214,14 @@ classdef rangeImage < handle
             xLine(toIgnore) = [];
             yLine(toIgnore) = [];
             
-            xError = (xLine - xActual).^2
-            yError = (yLine - yActual).^2
+            xError = (xLine - xActual).^2;
+            yError = (yLine - yActual).^2;
             
-            err = sum((xError + yError).^(1/2))
+            err = sum((xError + yError).^(1/2));
             
             err = err/(numpixels-2);
+            x = (xLeft+xRight)/2;
+            y = (yLeft+yRight)/2;
         end
         
         function num = numPixels(obj)
