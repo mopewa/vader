@@ -14,3 +14,6 @@
 
 # Simulink Code Generation
 slprj/
+
+# huge mat file
+lab6/cubicSpirals.mat
