@@ -5,6 +5,7 @@ classdef lineMapLocalizer < handle
     properties(Constant)
         maxErr = 0.05; % 5 cm
         minPts = 5; % min # of points that must match
+        body = vaderBot.bodyGraph(); % set of points used to graph the robot
     end
     
     properties(Access = private)
@@ -159,6 +160,7 @@ classdef lineMapLocalizer < handle
             % any changes that reduced the fit error. Pose changes that
             % increase fit error are not included and termination 
             % occurs thereafter.
+            inPose = pose(vaderBot.senToWorld(inPose));
             [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                         
             % for plotting a small box at the point's current location
@@ -167,7 +169,7 @@ classdef lineMapLocalizer < handle
             yPts = [.01,-.01,-.01,.01,.01];
             
             success = 1;
-            
+            disp('iterate');
             for i = 1:maxIters
                 if abs(err) < obj.errThresh || norm(grad) < obj.gradThresh
                     success = 0;
@@ -177,15 +179,15 @@ classdef lineMapLocalizer < handle
                 change = -obj.gain*grad;
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
                 clf;
-                plot([-.5, .5], [0, 0]);hold on;
-                plot([0, 0], [-.5, .5]);hold on;
-                plot(xPts+inPose.x, yPts+inPose.y);
-                xlim([-.5 .5]);
-                ylim([-.5 .5]);
+                plot([0 0], [0 1.2192], 'r');hold on;
+                plot([0 1.2192], [0 0], 'r');hold on;
+                plot(xPts+inPose.x, yPts+inPose.y);hold on;
                 pause(.01);
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
             end
-            outPose = inPose;
+            outPose = pose(vaderBot.robToWorld(inPose));
+            temp = outPose.bToA()*obj.body;
+            plot(temp(1, :), temp(2, :));hold on;
         end
     end
 end

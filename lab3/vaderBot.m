@@ -9,6 +9,7 @@ classdef vaderBot
         index        % Array index of the current state of the robot
         robot        % Neato robot object
         posPlot      % Plot of the position estimate of the robot
+       
     end
     
     properties (Constant)
@@ -38,6 +39,44 @@ classdef vaderBot
             vr = V + vaderBot.W2 * w;
             vl = V - vaderBot.W2 * w;
         end
+        
+        function bodyPts = bodyGraph()
+            % return an array of points that can be used to plot therobot
+            % body in a window.
+
+            % angle arrays
+            step = pi/20;
+            q1 = 0:step:pi/2;
+            q2 = pi/2:step:pi;
+            cir = 0:step:2*pi;
+
+            % circle for laser
+            lx = vaderBot.laser_rad*-cos(cir) + vaderBot.laser_l;
+            ly = vaderBot.laser_rad*sin(cir);
+
+            % body rear
+            bx = [-sin(q1)*vaderBot.rad lx [-sin(q2) 1 1 0]*vaderBot.rad];
+            by = [-cos(q1)*vaderBot.rad ly [-cos(q2) 1 -1 -1]*vaderBot.rad];
+            
+            %create homogeneous points
+            bodyPts = [bx ; by ; ones(1,size(bx,2))];
+
+        end
+        
+        function senToWorld = senToWorld(robPose)
+               % Finds the sensor pose in world given the robot
+            % pose in the world.
+            senToRob = pose(vaderBot.laser_l,0,0);
+            senToWorld = robPose.bToA()*senToRob.bToA();
+        end
+        
+        function robToWorld = robToWorld(senPose)
+            % Finds the robot pose given the sensor pose in
+            % the world.
+            senToRob = pose(vaderBot.laser_l,0,0);
+            robToWorld = senPose.bToA()*senToRob.aToB();
+        end
+        
     end
     
     methods
@@ -174,6 +213,7 @@ classdef vaderBot
             plot(follower.time, follower.error, '-r');
             
         end
+
     end
     
 end
