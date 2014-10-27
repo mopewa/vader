@@ -21,7 +21,6 @@ classdef robotKeypressDriver
             Vmax = 0.02*vGain;
             dV = 0.002*vGain;
             key = pollKeyboard();
-            disp(key);
             
             if (key ~= false)
                 if (strcmp(key,'uparrow'))

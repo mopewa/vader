@@ -3,7 +3,7 @@ classdef lineMapLocalizer < handle
     % order to find the true location of the range scan relative to
     % the map.
     properties(Constant)
-        maxErr = 0.05; % 5 cm
+        maxError = 0.05; % 5 cm
         minPts = 5; % min # of points that must match
         body = vaderBot.bodyGraph(); % set of points used to graph the robot
     end
@@ -89,16 +89,13 @@ classdef lineMapLocalizer < handle
         
         function ids = throwOutliers(obj,pose,ptsInModelFrame)
             % Find ids of outliers in a scan.
+            ids = [];
             worldPts = pose.bToA()*ptsInModelFrame;
-            % pre-intialize vector with NaNs
-            ids = NaN(1, size(worldPts, 2));
             for i = 1:size(worldPts,2)
                 r2 = obj.closestSquaredDistanceToLines(worldPts(:,i));
                 if(sqrt(r2) < obj.maxError)
-                    ids(i) = i;
+                    ids = [ids i];
                 end
-                % remove NaNs from vector
-                ids = ids(~isnan(ids));
             end
         end
         
@@ -161,15 +158,16 @@ classdef lineMapLocalizer < handle
             % increase fit error are not included and termination 
             % occurs thereafter.
             inPose = pose(vaderBot.senToWorld(inPose));
+            ids = obj.throwOutliers(inPose, ptsInModelFrame);
+            ptsInModelFrame(:,ids)=[];
             [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                         
             % for plotting a small box at the point's current location
             figure(1); hold on
-            xPts = [-.01,-.01,.01,.01,-.01];
-            yPts = [.01,-.01,-.01,.01,.01];
+%             xPts = [-.01,-.01,.01,.01,-.01];
+%             yPts = [.01,-.01,-.01,.01,.01];
             
             success = 1;
-            disp('iterate');
             for i = 1:maxIters
                 if abs(err) < obj.errThresh || norm(grad) < obj.gradThresh
                     success = 0;
@@ -178,16 +176,17 @@ classdef lineMapLocalizer < handle
                 
                 change = -obj.gain*grad;
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
-                clf;
-                plot([0 0], [0 1.2192], 'r');hold on;
-                plot([0 1.2192], [0 0], 'r');hold on;
-                plot(xPts+inPose.x, yPts+inPose.y);hold on;
-                pause(.01);
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
             end
+            clf;
             outPose = pose(vaderBot.robToWorld(inPose));
+            plot(outPose.x, outPose.y, 'or');
             temp = outPose.bToA()*obj.body;
+            plot([0 0], [0 1.2192], 'r');hold on;
+            plot([0 1.2192], [0 0], 'r');hold on;
             plot(temp(1, :), temp(2, :));hold on;
+            plot(ptsInModelFrame(1, :), ptsInModelFrame(2, :), 'og');hold on;
+            pause(.01);
         end
     end
 end

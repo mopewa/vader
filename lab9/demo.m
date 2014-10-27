@@ -1,8 +1,8 @@
 clc;
 
-robot = neato('femto');
+robot = neato('kilo');
 h = figure(1);
-maxIters = 10;
+maxIters = 15;
 
 r = vaderBot(0, 0, 0, robot);
 
@@ -13,9 +13,6 @@ robotPose = pose(15*0.0254,9*0.0254,pi()/2.0);
 
 endpoints1 = [[0 ; 0] [0 ; 0]];
 endpoints2 = [[4*12*0.254 ; 0] [0 ; 4*12*0.254]];
-
-plot([0 0], [0 1.2192], 'r');
-plot([0 1.2192], [0 0], 'r');
 
 localizer = lineMapLocalizer(endpoints1, endpoints2, 0.01, 0.001, 0.0005);
 
@@ -33,7 +30,6 @@ while (true)
        disp('Could not localize'); 
     else 
         robotPose = outPose;
-        disp('position updated');
     end
     
     pause(0.1);

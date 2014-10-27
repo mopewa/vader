@@ -102,7 +102,7 @@ classdef rangeImage < handle
         
         function [err, num, th, len, x, y] = findLineCandidate(obj,middle,maxLen)
             % Find the longest sequence of pixels centered at pixel
-            % “middle” whose endpoints are separated by a length less
+            % “middle�? whose endpoints are separated by a length less
             % than the provided maximum. Return the line fit error, the
             % number of pixels participating, and the angle of
             % the line relative to the sensor.
@@ -249,7 +249,7 @@ classdef rangeImage < handle
         
         function out = indexAdd(obj,a,b)
             % add with wraparound over natural numbers. First number
-            % “a” is "natural" meaning it >=1. Second number is signed.
+            % “a�? is "natural" meaning it >=1. Second number is signed.
             % Convert a to 0:3 and add b (which is already 0:3).
             % Convert the result back by adding 1.
             out = mod((a-1)+b,obj.numPix)+1;
