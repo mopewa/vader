@@ -151,6 +151,41 @@ classdef lineMapLocalizer < handle
             J = [1/eps * (errX-errPlus0), 1/eps * (errY-errPlus0), 1/eps * (errT-errPlus0)];
         end
         
-        
+        function [success, outPose] = refinePose(obj,inPose,ptsInModelFrame,maxIters)
+            % refine robot pose in world (inPose) based on lidar
+            % registration. Terminates if maxIters iterations is
+            % exceeded or if insufficient points match the lines.
+            % Even if the minimum is not found, outPose will contain 
+            % any changes that reduced the fit error. Pose changes that
+            % increase fit error are not included and termination 
+            % occurs thereafter.
+            [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
+                        
+            % for plotting a small box at the point's current location
+            figure(1); hold on
+            xPts = [-.01,-.01,.01,.01,-.01];
+            yPts = [.01,-.01,-.01,.01,.01];
+            
+            success = 1;
+            
+            for i = 1:maxIters
+                if abs(err) < obj.errThresh || norm(grad) < obj.gradThresh
+                    success = 0;
+                    break;
+                end
+                
+                change = -obj.gain*grad;
+                inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
+                clf;
+                plot([-.5, .5], [0, 0]);hold on;
+                plot([0, 0], [-.5, .5]);hold on;
+                plot(xPts+inPose.x, yPts+inPose.y);
+                xlim([-.5 .5]);
+                ylim([-.5 .5]);
+                pause(.01);
+                [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
+            end
+            outPose = inPose;
+        end
     end
 end
