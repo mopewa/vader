@@ -32,10 +32,10 @@ classdef robotKeypressDriver
                     robot.sendVelocity(-Vmax,-Vmax);
                 elseif (strcmp(key,'leftarrow'))
                     disp('left');
-                    robot.sendVelocity(-Vmax,Vmax);
+                    robot.sendVelocity(Vmax,dV+Vmax);
                 elseif(strcmp(key,'rightarrow'))
                     disp('right');
-                    robot.sendVelocity(Vmax,-Vmax);
+                    robot.sendVelocity(dV+Vmax,Vmax);
                 elseif(strcmp(key,'s'))
                     disp('stop');
                     robot.sendVelocity(0.0,0.0);

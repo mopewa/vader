@@ -25,11 +25,11 @@ while (true)
     image = rangeImage(ranges, downSample, false);
 
     [success, outPose] = refinePose(localizer,robotPose,[image.xArray; image.yArray; ones(1, 360/downSample)],maxIters);
+    robotPose = outPose;
     if (success)
         wp = robotPose.bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
         plot(wp(1, :), wp(2, :), 'og');hold on;
     end
-    robotPose = outPose;
 %     robotPose.x
 %     robotPose.y
 %     robotPose.th
