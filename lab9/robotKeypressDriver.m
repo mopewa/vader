@@ -8,6 +8,7 @@ classdef robotKeypressDriver
     
     properties (Access = private)
         fh=[];
+        robot;
     end
    
     properties (Access = public)
@@ -31,10 +32,10 @@ classdef robotKeypressDriver
                     robot.sendVelocity(-Vmax,-Vmax);
                 elseif (strcmp(key,'leftarrow'))
                     disp('left');
-                    robot.sendVelocity(Vmax,Vmax+dV);
+                    robot.sendVelocity(-Vmax,Vmax);
                 elseif(strcmp(key,'rightarrow'))
                     disp('right');
-                    robot.sendVelocity(Vmax+dV,Vmax);
+                    robot.sendVelocity(Vmax,-Vmax);
                 elseif(strcmp(key,'s'))
                     disp('stop');
                     robot.sendVelocity(0.0,0.0);
@@ -49,16 +50,17 @@ classdef robotKeypressDriver
     
     methods (Access = public)
 
-        function obj = robotKeypressDriver(fh)
+        function obj = robotKeypressDriver(robot, fh)
             % create a robotKeypressDriver for the figure handle
             % normally you call this with gcf for fh
             obj.fh = fh;
-            set(fh,'KeyPressFcn',@keyboardEventListener);
+            obj.robot = robot;
+            set(fh,'KeyPressFcn',@(source, event) keyboardEventListener(source, event, robot));
         end
     end
 end
 
-function keyboardEventListener(~,event)
+function keyboardEventListener(~,event, robot)
     %keyboardEventListener Invoked when a keyboard character is pressed.
 
     global keypressFrame;
@@ -68,6 +70,8 @@ function keyboardEventListener(~,event)
     keypressFrame = keypressFrame + 1;
     keypressDataReady = 1;
     keypressKey = event.Key;
+    
+    robotKeypressDriver.drive(robot, 1);
 
 end
 

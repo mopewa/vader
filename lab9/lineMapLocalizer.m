@@ -93,7 +93,7 @@ classdef lineMapLocalizer < handle
             worldPts = pose.bToA()*ptsInModelFrame;
             for i = 1:size(worldPts,2)
                 r2 = obj.closestSquaredDistanceToLines(worldPts(:,i));
-                if(sqrt(r2) < obj.maxError)
+                if(sqrt(r2) > obj.maxError)
                     ids = [ids i];
                 end
             end
@@ -157,9 +157,13 @@ classdef lineMapLocalizer < handle
             % any changes that reduced the fit error. Pose changes that
             % increase fit error are not included and termination 
             % occurs thereafter.
+            clf;
             inPose = pose(vaderBot.senToWorld(inPose));
+            plot(inPose.x, inPose.y, 'rx');hold on;
             ids = obj.throwOutliers(inPose, ptsInModelFrame);
             ptsInModelFrame(:,ids)=[];
+            wp = inPose.bToA()*ptsInModelFrame;
+            plot(wp(1, :), wp(2, :), 'or');hold on;
             [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                         
             % for plotting a small box at the point's current location
@@ -174,19 +178,20 @@ classdef lineMapLocalizer < handle
                     break;
                 end
                 
-                change = -obj.gain*grad;
+                change = -obj.gain*grad
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
+                
             end
-            clf;
+            plot(inPose.x, inPose.y, 'xg');
             outPose = pose(vaderBot.robToWorld(inPose));
-            plot(outPose.x, outPose.y, 'or');
             temp = outPose.bToA()*obj.body;
             plot([0 0], [0 1.2192], 'r');hold on;
             plot([0 1.2192], [0 0], 'r');hold on;
             plot(temp(1, :), temp(2, :));hold on;
-            plot(ptsInModelFrame(1, :), ptsInModelFrame(2, :), 'og');hold on;
-            pause(.01);
+            plot(wp(1, :), wp(2, :), 'og');hold on;
+            axis equal;
+            pause(.1);
         end
     end
 end
