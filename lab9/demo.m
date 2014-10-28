@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('femto');
+robot = neato('nano');
 h = figure(1);
 maxIters = 10;
 
@@ -25,13 +25,15 @@ while (true)
     image = rangeImage(ranges, downSample, false);
 
     [success, outPose] = refinePose(localizer,robotPose,[image.xArray; image.yArray; ones(1, 360/downSample)],maxIters);
-    if (~success)
-       disp('localized!'); 
-    else 
-        disp('fill iter');
+    if (success)
+        wp = robotPose.bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
+        plot(wp(1, :), wp(2, :), 'og');hold on;
     end
     robotPose = outPose;
-    pause(0.1);
+%     robotPose.x
+%     robotPose.y
+%     robotPose.th
+    pause(1.5);
     
 end
 

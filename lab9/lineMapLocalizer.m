@@ -3,7 +3,7 @@ classdef lineMapLocalizer < handle
     % order to find the true location of the range scan relative to
     % the map.
     properties(Constant)
-        maxError = 0.05; % 5 cm
+        maxError = 0.1; % 15 cm
         minPts = 5; % min # of points that must match
         body = vaderBot.bodyGraph(); % set of points used to graph the robot
     end
@@ -122,6 +122,8 @@ classdef lineMapLocalizer < handle
                         worldPts(1,i),worldPts(2,i),r2);
                 end
             end
+%             printf('num = %d\n', num);
+%             size(worldPts, 2)
             if(num > lineMapLocalizer.minPts)
                 avgErr = sqrt(err)/num;
             else
@@ -162,12 +164,9 @@ classdef lineMapLocalizer < handle
             plot(inPose.x, inPose.y, 'rx');hold on;
             ids = obj.throwOutliers(inPose, ptsInModelFrame);
             ptsInModelFrame(:,ids)=[];
-            wp = inPose.bToA()*ptsInModelFrame;
-            plot(wp(1, :), wp(2, :), 'or');hold on;
             [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                         
             % for plotting a small box at the point's current location
-            figure(1); hold on
 %             xPts = [-.01,-.01,.01,.01,-.01];
 %             yPts = [.01,-.01,-.01,.01,.01];
             
@@ -178,7 +177,7 @@ classdef lineMapLocalizer < handle
                     break;
                 end
                 
-                change = -obj.gain*grad
+                change = -obj.gain*grad;
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                 
@@ -189,7 +188,6 @@ classdef lineMapLocalizer < handle
             plot([0 0], [0 1.2192], 'r');hold on;
             plot([0 1.2192], [0 0], 'r');hold on;
             plot(temp(1, :), temp(2, :));hold on;
-            plot(wp(1, :), wp(2, :), 'og');hold on;
             axis equal;
             pause(.1);
         end
