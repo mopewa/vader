@@ -24,41 +24,61 @@ classdef lineMapLocalizer < handle
     end
     
     methods(Static)
-        
-        function [rad2, po] = closestPointOnLineSegment(p,p1,p2)
-            % Find point po on a line segment p1-p2 closest to a given
-            % point pi and return the closest point and the square of
-            % the distance to it. The line segment has endpoints p1
-            % and p2 (column vectors) and the point is pi. If the
-            % closest point is an endpoint, returns infinity for rad2
-            % because such points are bad for lidar matching
-            % localization.
-            dx13 = p(1) - p1(1);
-            dy13 = p(2) - p1(2);
-            dx12 = p2(1) - p1(1);
-            dy12 = p2(2) - p1(2);
-            dx23 = p(1) - p2(1);
-            dy23 = p(2) - p2(2);
-            v1 = [dx13 ; dy13];
-            v2 = [dx12 ; dy12];
-            v3 = [dx23 ; dy23];
-            v1dotv2 = dot(v1,v2);
-            v2dotv2 = dot(v2,v2);
-            v3dotv2 = dot(v3,v2);
-            if v1dotv2 > 0.0 && v3dotv2 < 0.0 % Closest is on segment
+        function [rad2, po] = closestPointOnLineSegment(pt,p1,p2)
+            % Given set of points and a line segment, returns the
+            % closest point and square of distance to segment for
+            % each point. If the closest point is an endpoint, returns
+            % infinity for rad2 because such points are bad for
+            % lidar matching localization.
+            %
+            % [rad2, po] = CLOSESTPOINTONLINESEGMENT(pt,p1,p2)
+            %
+            % pi - Array of points of size 2 x n.
+            % p1 - Column of size 2, endpoint of segment.
+            % p2 - Column of size 2, endpoint of segment.
+            %
+            % rad2 - Squared distance to closest point on segment.
+            % po - Closest points on segment. Same size as pt.
+            v1 = bsxfun(@minus,pt,p1);
+            v2 = p2-p1;
+            v3 = bsxfun(@minus,pt,p2);
+            v1dotv2 = bsxfun(@times,v1,v2);
+            v1dotv2 = sum(v1dotv2,1);
+            v2dotv2 = sum(v2.*v2);
+            v3dotv2 = bsxfun(@times,v3,v2);
+            v3dotv2 = sum(v3dotv2,1);
+            nPoints = size(pt,2);
+            rad2 = zeros(1,nPoints);
+            po = zeros(2,nPoints);
+            % Closest is on segment
+            flag1 = v1dotv2 > 0.0 & v3dotv2 < 0.0;
+            if any(flag1)
                 scale = v1dotv2/v2dotv2;
-                po = v2*scale + [p1(1) ; p1(2)];
-                dx = p(1)-po(1);
-                dy = p(2)-po(2);
-                rad2 = dx*dx+dy*dy;
-            elseif v1dotv2 <= 0.0 % Closest is first endpoint
-                po = [p1(1) ; p1(2)];
-                rad2 = inf;
-            else % Closest is second endpoint
-                po = [p2(1) ; p2(2)];
-                rad2 = inf;
+                temp = bsxfun(@plus,v2*scale,[p1(1) ; p1(2)]);
+                po(:,flag1) = temp(:,flag1);
+                dx = pt(1,flag1)-po(1,flag1);
+                dy = pt(2,flag1)-po(2,flag1);
+                rad2(flag1) = dx.*dx+dy.*dy;
+            end
+            % Closest is first endpoint
+            flag2 = v1dotv2 <= 0.0;
+            if any(flag2)
+                temp = bsxfun(@times,ones(2,sum(flag2)),[p1(1);
+                    p1(2)]);
+                po(:,flag2) = temp;
+                rad2(flag2) = inf;
+            end
+            % Closest is second endpoint
+            flag3 = ones(size(1,nPoints)) & ~flag1 & ~flag2;
+            if any(flag3)
+                temp = bsxfun(@times,ones(2,sum(flag3)),[p2(1);
+                    p2(2)]);
+                po(:,flag3) = temp;
+                rad2(flag3) = inf;
             end
         end
+        
+        
     end
     
     methods
@@ -75,65 +95,49 @@ classdef lineMapLocalizer < handle
             obj.gradThresh = gradThresh;
         end
         
-        function ro2 = closestSquaredDistanceToLines(obj,p)
-            % Find the squared shortest distance from pi to any line
-            % segment in the supplied list of line segments. p1 is the
-            % array of start point and p2 is the array of end points.
-            A = obj.lines_p1;
-            B = obj.lines_p2;
-            [ro2, ~] = arrayfun(@(x) lineMapLocalizer.closestPointOnLineSegment(p,A(:,x), B(:,x)),...
-                1:size(A,2), 'UniformOutput', false);
-            ro2 = min([ro2{:}]);
+        function ro2 = closestSquaredDistanceToLines(obj,pt)
+            % Find the squared shortest distance from pt to any line
+            % segment in the supplied list of line segments.
+            % pt is an array of 2d points
+            
+            % throw away homogenous flag
+            pt = pt(1:2,:);
+            r2Array = zeros(size(obj.lines_p1,2),size(pt,2));
+            for i = 1:size(obj.lines_p1,2)
+                [r2Array(i,:) , ~] = lineMapLocalizer.closestPointOnLineSegment(pt,...
+                    obj.lines_p1(:,i),obj.lines_p2(:,i));
+            end
+            ro2 = min(r2Array,[],1);
         end
         
         function ids = throwOutliers(obj,pose,ptsInModelFrame)
             % Find ids of outliers in a scan.
             worldPts = pose.bToA()*ptsInModelFrame;
-            ids = NaN(1, size(worldPts,2));
-            for i = 1:size(worldPts,2)
-                r2 = obj.closestSquaredDistanceToLines(worldPts(:,i));
-                if(sqrt(r2) > obj.maxError)
-                    ids(i) = i;
-                end
-            end
-            ids(isnan(ids)) = [];
+            r2 = obj.closestSquaredDistanceToLines(worldPts);
+            ids = find(sqrt(r2) > obj.maxError);
         end
         
-        function avgErr = fitError(obj,pose,ptsInModelFrame,printErr)
+        function avgErr = fitError(obj,pose,ptsInModelFrame)
             % Find the standard deviation of perpendicular distances of
             % all points to all lines
-            % pose is the believed robot pose
-            % ptsInModelFrame must be in homogenous form
-            % printErr is a printing boolean flag
-            
+            % transform the points
             worldPts = pose.bToA()*ptsInModelFrame;
             
-            err = 0.0;
-            num = 0;
-            for i = 1:size(worldPts,2)
-                r2 = obj.closestSquaredDistanceToLines(worldPts(:,i));
-                if(r2 == Inf)
-                    continue;
-                end
-                err = err + r2;
-                num = num + 1;
-                if(printErr)
-                    fprintf('i: %d x:%f y:%f val:%f\n',i,...
-                        worldPts(1,i),worldPts(2,i),r2);
-                end
-            end
-            %             printf('num = %d\n', num);
-            %             size(worldPts, 2)
-            if(num > lineMapLocalizer.minPts)
+            r2 = obj.closestSquaredDistanceToLines(worldPts);
+            r2(r2 == Inf) = [];
+            err = sum(r2);
+            num = length(r2);
+            if(num >= lineMapLocalizer.minPts)
                 avgErr = sqrt(err)/num;
             else
+                % not enough points to make a guess
                 avgErr = inf;
             end
         end
-        
+       
         function [errPlus0,J] = getJacobian(obj,poseIn,modelPts)
             % Computes the gradient of the error function
-            errPlus0 = fitError(obj,poseIn,modelPts,false);
+            errPlus0 = fitError(obj,poseIn,modelPts);
             
             eps = 0.001;
             dx = [eps ; 0.0 ; 0.0];
@@ -144,9 +148,9 @@ classdef lineMapLocalizer < handle
             newPoseY = pose(poseIn.getPose+dy);
             newPoseT = pose(poseIn.getPose+dt);
             
-            errX = fitError(obj, newPoseX, modelPts, false);
-            errY = fitError(obj, newPoseY, modelPts, false);
-            errT = fitError(obj, newPoseT, modelPts, false);
+            errX = fitError(obj, newPoseX, modelPts);
+            errY = fitError(obj, newPoseY, modelPts);
+            errT = fitError(obj, newPoseT, modelPts);
             
             J = [1/eps * (errX-errPlus0), 1/eps * (errY-errPlus0), 1/eps * (errT-errPlus0)];
         end
