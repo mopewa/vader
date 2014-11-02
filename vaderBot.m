@@ -9,7 +9,7 @@ classdef vaderBot
         index        % Array index of the current state of the robot
         robot        % Neato robot object
         posPlot      % Plot of the position estimate of the robot
-       
+        localizer    % Instance of lineMapLocalizer
     end
     
     properties (Constant)
@@ -99,6 +99,10 @@ classdef vaderBot
             
         end
         
+        function obj = setLocalizer(obj, localizer)
+            obj.localizer = localizer;
+        end
+        
         function drive(obj, lVeloc, rVeloc)
             if lVeloc > .3 || rVeloc > .3
                 disp('adjusting velocity');
@@ -112,8 +116,32 @@ classdef vaderBot
             obj.xPos(obj.index) = pose.x;
             obj.yPos(obj.index) = pose.y;
             obj.theta(obj.index) = pose.th;
+            % why doesn't this update index?
         end
         
+        function curPose = getPose(obj)
+            curPose = pose(obj.xPos(obj.index), obj.yPos(obj.index), obj.theta(obj.index));
+        end
+        
+        % updates the robot's state when new laser range data arrives
+        function [obj, success] = processRangeImage(obj, image) 
+            maxIters = 10;
+            curPose = obj.getPose();
+            [success, poseMap] = obj.localizer.refinePose(curPose,[image.xArray; image.yArray; ones(size(image.xArray))],maxIters);
+
+            subPose = pose.subtractPoses(curPose, poseMap);
+            fractionPose = pose(.25 * subPose.x, .25*subPose.y, .25*subPose.th);
+            poseFused = pose.addPoses(curPose, fractionPose);
+
+            obj = obj.setPose(poseFused);
+        end
+        
+        % updates the robot's state when new odometry data arrives
+        function obj = processOdometryData(obj, encoderL, encoderR, dt)
+            obj = obj.updateState(encoderL, encoderR, dt);
+        end
+        
+        % deprecated, use processOdometryData
         function obj = updateState(obj, encoderL, encoderR, dt)
             if (dt ~= 0)
                 obj.time(obj.index+1) = obj.time(obj.index) + dt;
@@ -180,7 +208,7 @@ classdef vaderBot
                 prevRightEncoder = rightEncoder;
                 prevTimeStamp = timeStamp;
                 
-                obj = obj.updateState(eL, eR, dt);z
+                obj = obj.processOdometryData(eL, eR, dt);z
                 
                 currentTime = toc(timer);
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
