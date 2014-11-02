@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('nano');
+robot = neato('centi');
 h = figure(1);
 maxIters = 10;
 
@@ -30,9 +30,9 @@ while (true)
         wp = robotPose.bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
         plot(wp(1, :), wp(2, :), 'og');hold on;
     end
-%     robotPose.x
-%     robotPose.y
-%     robotPose.th
+     robotPose.x
+     robotPose.y
+     robotPose.th
     pause(1.5);
     
 end

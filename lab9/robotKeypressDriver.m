@@ -19,8 +19,8 @@ classdef robotKeypressDriver
 
         function drive(robot,vGain)
             % drive the robot
-            Vmax = 0.02*vGain;
-            dV = 0.002*vGain;
+            Vmax = vGain;
+            dV = 0.2*vGain;
             key = pollKeyboard();
             
             if (key ~= false)
@@ -71,7 +71,7 @@ function keyboardEventListener(~,event, robot)
     keypressDataReady = 1;
     keypressKey = event.Key;
     
-    robotKeypressDriver.drive(robot, 1);
+    robotKeypressDriver.drive(robot, .15);
 
 end
 

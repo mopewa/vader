@@ -16,6 +16,14 @@ classdef pose < handle
             w = atan2(-mat(1,2),mat(1,1));
             vec = [x ; y ; w];
         end
+        
+        function p = addPoses(pose1, pose2)
+            p = pose(pose1.x +pose2.x, pose1.y+pose2.y, atan2(sin(pose1.th+pose2.th), cos(pose1.th+pose2.th)));
+        end
+        
+        function p = subtractPoses(pose1, pose2)
+            p = pose(pose2.x-pose1.x, pose2.y-pose1.y, atan2(sin(pose2.th-pose1.th), cos(pose2.th-pose1.th)));
+        end
     end
     
     methods(Access = private)
@@ -39,11 +47,23 @@ classdef pose < handle
             end
         end
         
-        function x = x(obj);   x   = obj.poseVec(1);  end
-        function y = y(obj);   y   = obj.poseVec(2);  end
-        function th = th(obj); th  = obj.poseVec(3);  end
+        function x = x(obj)
+            x   = obj.poseVec(1); 
+        end
         
-        function p = getPose(obj); p = obj.poseVec; end;
+        function y = y(obj)
+            y   = obj.poseVec(2);
+        end
+        
+        function th = th(obj)
+            th  = obj.poseVec(3);
+        end
+        
+        function p = getPose(obj)
+            p = obj.poseVec;
+        end
+        
+        
         
         function mat = bToA(obj)
             % Returns the homogeneous transform that converts coordinates from

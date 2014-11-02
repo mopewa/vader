@@ -76,6 +76,7 @@ classdef vaderBot
             senToRob = pose(vaderBot.laser_l,0,0);
             robToWorld = senPose.bToA()*senToRob.aToB();
         end
+       
         
     end
     
@@ -105,6 +106,12 @@ classdef vaderBot
             lVeloc = min(lVeloc, .3);
             rVeloc = min(rVeloc, .3);
             obj.robot.sendVelocity(lVeloc, rVeloc);
+        end
+        
+        function obj = setPose(obj, pose)
+            obj.xPos(obj.index) = pose.x;
+            obj.yPos(obj.index) = pose.y;
+            obj.theta(obj.index) = pose.th;
         end
         
         function obj = updateState(obj, encoderL, encoderR, dt)
@@ -173,7 +180,7 @@ classdef vaderBot
                 prevRightEncoder = rightEncoder;
                 prevTimeStamp = timeStamp;
                 
-                obj = obj.updateState(eL, eR, dt);
+                obj = obj.updateState(eL, eR, dt);z
                 
                 currentTime = toc(timer);
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
