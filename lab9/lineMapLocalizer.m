@@ -69,7 +69,7 @@ classdef lineMapLocalizer < handle
                 rad2(flag2) = inf;
             end
             % Closest is second endpoint
-            flag3 = ones(size(1,nPoints)) & ~flag1 & ~flag2;
+            flag3 = ones(1,nPoints) & ~flag1 & ~flag2;
             if any(flag3)
                 temp = bsxfun(@times,ones(2,sum(flag3)),[p2(1);
                     p2(2)]);

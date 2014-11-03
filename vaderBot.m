@@ -185,6 +185,9 @@ classdef vaderBot
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
+            global newRanges;
+            global ranges;
+            downSample = 10;
             
             startPose = [obj.xPos(obj.index),obj.yPos(obj.index),obj.theta(obj.index)];
             
@@ -208,12 +211,24 @@ classdef vaderBot
                 prevRightEncoder = rightEncoder;
                 prevTimeStamp = timeStamp;
                 
-                obj = obj.processOdometryData(eL, eR, dt);z
+                obj = obj.processOdometryData(eL, eR, dt);
                 
                 currentTime = toc(timer);
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
                 
                 obj.drive(vl, vr);
+                
+                % process range data when new range data arrives
+                if (newRanges)
+                    newRanges = 0;
+                    image = rangeImage(ranges, downSample, false);
+                    [obj, success] = obj.processRangeImage(image);
+
+                    if (success)
+                        wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
+                        plot(wp(1, :), wp(2, :), 'og');hold on;
+                    end
+                end
                 
                 pause(.005);
             end
@@ -235,6 +250,18 @@ classdef vaderBot
             dt = timeStamp - prevTimeStamp;
             
             obj = obj.updateState(eL, eR, dt);
+            
+            % process range data when new range data arrives
+            if (newRanges)
+                newRanges = 0;
+                image = rangeImage(ranges, downSample, false);
+                [obj, success] = obj.processRangeImage(image);
+
+                if (success)
+                    wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
+                    plot(wp(1, :), wp(2, :), 'og');hold on;
+                end
+            end
             
             [finalX, finalY, ~] = traj.getPoseAtTime(currentTime);
             xError = obj.xPos(obj.index)-finalX;
