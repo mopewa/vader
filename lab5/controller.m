@@ -53,7 +53,12 @@ classdef controller
             
             posErrorWorldFrame = [goalX - curX; goalY - curY];
             % assumes starting theta is 0 and aligns with world frame
-            transformation = inv([cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)]);
+            A = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
+            if (rank(A) < 2)
+                disp('Not Invertable');
+                A
+            end
+            transformation = A\eye(size(A));
             posErrorRobotFrame = transformation * posErrorWorldFrame;
             e = sqrt((goalX - curX)^2 + (goalY - curY)^2);
             if (e <= .05)

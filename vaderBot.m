@@ -187,8 +187,8 @@ classdef vaderBot
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
-            global newRanges;
-            global ranges;
+%             global newRanges;
+%             global ranges;
             downSample = 10;
             
             startPose = [obj.xPos(obj.index),obj.yPos(obj.index),obj.theta(obj.index)];
@@ -203,8 +203,9 @@ classdef vaderBot
             
             timer = tic;
             currentTime = toc(timer);
-            
+            i = 0;
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
+                i = i + 1;
                 eL = leftEncoder - prevLeftEncoder;
                 eR = rightEncoder - prevRightEncoder;
                 dt = timeStamp - prevTimeStamp;
@@ -221,17 +222,14 @@ classdef vaderBot
                 obj.drive(vl, vr);
                 
                 % process range data when new range data arrives
-                if (newRanges)
-                    newRanges = 0;
+%                 if (i > 0)
+                    
+                    ranges = obj.robot.laser.data.ranges;
+                    downSample = 10;
                     image = rangeImage(ranges, downSample, false);
                     [obj, success] = obj.processRangeImage(image);
-
-                    if (success)
-                        wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
-                        plot(wp(1, :), wp(2, :), 'og');hold on;
-                    end
-                end
-                
+                    i = 0;
+%                 end
                 pause(.005);
             end
             
@@ -254,21 +252,21 @@ classdef vaderBot
             obj = obj.updateState(eL, eR, dt);
             
             % process range data when new range data arrives
-            if (newRanges)
-                newRanges = 0;
-                image = rangeImage(ranges, downSample, false);
-                [obj, success] = obj.processRangeImage(image);
-
-                if (success)
-                    wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
-                    plot(wp(1, :), wp(2, :), 'og');hold on;
-                end
-            end
+%             if (newRanges)
+%                 newRanges = 0;
+%                 image = rangeImage(ranges, downSample, false);
+%                 [obj, success] = obj.processRangeImage(image);
+% 
+%                 if (success)
+%                     wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
+%                     plot(wp(1, :), wp(2, :), 'og');hold on;
+%                 end
+%             end
             
             [finalX, finalY, ~] = traj.getPoseAtTime(currentTime);
             xError = obj.xPos(obj.index)-finalX;
             yError = obj.yPos(obj.index)-finalY;
-            totalError = sqrt(xError^2 + yError^2)
+            totalError = sqrt(xError^2 + yError^2);
             
             figure(5);
             hold on;
