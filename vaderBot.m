@@ -10,6 +10,8 @@ classdef vaderBot
         robot        % Neato robot object
         posPlot      % Plot of the position estimate of the robot
         localizer    % Instance of lineMapLocalizer
+        xTrajectories% Set of all trajectory xPos followed
+        yTrajectories% Set of all trajectory yPos followed
     end
     
     properties (Constant)
@@ -270,7 +272,10 @@ classdef vaderBot
             
             figure(5);
             hold on;
-            plot(obj.xPos, obj.yPos, traj.poses(:,1)', traj.poses(:,2)');
+            plot(obj.xPos, obj.yPos, 'b');
+            obj.xTrajectories = [obj.xTrajectories, traj.poses(:,1)'];
+            obj.yTrajectories = [obj.yTrajectories, traj.poses(:,2)'];
+            plot(obj.xTrajectories, obj.yTrajectories, 'g');
             figure(6);
             plot(follower.time, follower.error, '-r');
             
