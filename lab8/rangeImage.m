@@ -68,7 +68,7 @@ classdef rangeImage < handle
             plot(obj.xArray, obj.yArray)
         end
         
-        function [bestX, bestY, bestTh] = getBestLine(obj, maxLen)
+        function [bestX, bestY, bestTh] = findObject(obj, maxLen)
             bestErr = intmax;
             bestTh = 0;
             bestI = 0;
@@ -76,7 +76,7 @@ classdef rangeImage < handle
             bestX = 0;
             bestY = 0;
             for i = 1:size(obj.tArray,2)
-                [err, ~, th, len, x, y] = obj.findLineCandidate(i, maxLen)
+                [err, ~, th, len, x, y] = obj.findLineCandidate(i, maxLen);
                 disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
                 if (err < bestErr && len > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
                     disp(['***********found better********** ', int2str(i)]);
@@ -102,7 +102,7 @@ classdef rangeImage < handle
         
         function [err, num, th, len, x, y] = findLineCandidate(obj,middle,maxLen)
             % Find the longest sequence of pixels centered at pixel
-            % “middle�? whose endpoints are separated by a length less
+            % “middle�? whose endpoints are separated by a length less
             % than the provided maximum. Return the line fit error, the
             % number of pixels participating, and the angle of
             % the line relative to the sensor.
@@ -249,7 +249,7 @@ classdef rangeImage < handle
         
         function out = indexAdd(obj,a,b)
             % add with wraparound over natural numbers. First number
-            % “a�? is "natural" meaning it >=1. Second number is signed.
+            % “a�? is "natural" meaning it >=1. Second number is signed.
             % Convert a to 0:3 and add b (which is already 0:3).
             % Convert the result back by adding 1.
             out = mod((a-1)+b,obj.numPix)+1;

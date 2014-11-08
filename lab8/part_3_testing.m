@@ -16,7 +16,7 @@ while (~foundLine)
     ranges = robot.laser.data.ranges;
 
     image = rangeImage(ranges, 1, 1);
-    [x,y,th] = image.getBestLine(.5125)
+    [x,y,th] = image.findObject(.5125)
     foundLine = x || y;
 end
 robot.stopLaser();

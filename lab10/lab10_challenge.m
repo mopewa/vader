@@ -31,7 +31,7 @@ end1 = pose(r.getPose().aToB()*pose1.bToA());
 path1 = cubicSpiral.planTrajectory(end1.x, end1.y, end1.th, 1);
 path1.planVelocities(.2);
  
-[r, err] = r.executeTrajectory(path1);
+[r, err] = r.executeTrajectory(path1, true);
 pause(1);
 
 timer = tic;
@@ -50,7 +50,7 @@ end2 = pose(r.getPose().aToB()*pose2.bToA());
 path2 = cubicSpiral.planTrajectory(end2.x, end2.y, end2.th, 1);
 path2.planVelocities(.2);
 
-[r, err] = r.executeTrajectory(path2);
+[r, err] = r.executeTrajectory(path2, true);
 pause(1);
 
 timer = tic;
@@ -67,7 +67,7 @@ end3 = pose(r.getPose().aToB()*pose3.bToA());
 path3 = cubicSpiral.planTrajectory(end3.x, end3.y, end3.th, 1);
 path3.planVelocities(.2);
 
-[r, err] = r.executeTrajectory(path3);
+[r, err] = r.executeTrajectory(path3, true);
 
 timer = tic;
 while(toc(timer) < 5)

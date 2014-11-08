@@ -45,28 +45,28 @@ classdef vaderBot
         function bodyPts = bodyGraph()
             % return an array of points that can be used to plot therobot
             % body in a window.
-
+            
             % angle arrays
             step = pi/20;
             q1 = 0:step:pi/2;
             q2 = pi/2:step:pi;
             cir = 0:step:2*pi;
-
+            
             % circle for laser
             lx = vaderBot.laser_rad*-cos(cir) + vaderBot.laser_l;
             ly = vaderBot.laser_rad*sin(cir);
-
+            
             % body rear
             bx = [-sin(q1)*vaderBot.rad lx [-sin(q2) 1 1 0]*vaderBot.rad];
             by = [-cos(q1)*vaderBot.rad ly [-cos(q2) 1 -1 -1]*vaderBot.rad];
             
             %create homogeneous points
             bodyPts = [bx ; by ; ones(1,size(bx,2))];
-
+            
         end
         
         function senToWorld = senToWorld(robPose)
-               % Finds the sensor pose in world given the robot
+            % Finds the sensor pose in world given the robot
             % pose in the world.
             senToRob = pose(vaderBot.laser_l,0,0);
             senToWorld = robPose.bToA()*senToRob.bToA();
@@ -78,7 +78,7 @@ classdef vaderBot
             senToRob = pose(vaderBot.laser_l,0,0);
             robToWorld = senPose.bToA()*senToRob.aToB();
         end
-       
+        
         
     end
     
@@ -126,15 +126,15 @@ classdef vaderBot
         end
         
         % updates the robot's state when new laser range data arrives
-        function [obj, success] = processRangeImage(obj, image) 
+        function [obj, success] = processRangeImage(obj, image)
             maxIters = 10;
             curPose = obj.getPose();
             [success, poseMap] = obj.localizer.refinePose(curPose,[image.xArray; image.yArray; ones(size(image.xArray))],maxIters);
-
+            
             subPose = pose.subtractPoses(curPose, poseMap);
             fractionPose = pose(.25 * subPose.x, .25*subPose.y, .25*subPose.th);
             poseFused = pose.addPoses(curPose, fractionPose);
-
+            
             obj = obj.setPose(poseFused);
         end
         
@@ -183,13 +183,10 @@ classdef vaderBot
             end
         end
         
-        function [obj, totalError] = executeTrajectory(obj, trajectory)
+        function [obj, totalError] = executeTrajectory(obj, trajectory, useMap)
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
-%             global newRanges;
-%             global ranges;
-            downSample = 10;
             
             startPose = [obj.xPos(obj.index),obj.yPos(obj.index),obj.theta(obj.index)];
             
@@ -205,7 +202,6 @@ classdef vaderBot
             currentTime = toc(timer);
             i = 0;
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
-                i = i + 1;
                 eL = leftEncoder - prevLeftEncoder;
                 eR = rightEncoder - prevRightEncoder;
                 dt = timeStamp - prevTimeStamp;
@@ -221,15 +217,13 @@ classdef vaderBot
                 
                 obj.drive(vl, vr);
                 
-                % process range data when new range data arrives
-%                 if (i > 0)
-                    
+                % process range data
+                if (useMap)
                     ranges = obj.robot.laser.data.ranges;
                     downSample = 10;
                     image = rangeImage(ranges, downSample, false);
                     [obj, success] = obj.processRangeImage(image);
-                    i = 0;
-%                 end
+                end
                 pause(.005);
             end
             
@@ -250,19 +244,7 @@ classdef vaderBot
             dt = timeStamp - prevTimeStamp;
             
             obj = obj.updateState(eL, eR, dt);
-            
-            % process range data when new range data arrives
-%             if (newRanges)
-%                 newRanges = 0;
-%                 image = rangeImage(ranges, downSample, false);
-%                 [obj, success] = obj.processRangeImage(image);
-% 
-%                 if (success)
-%                     wp = obj.getPose().bToA()*[image.xArray; image.yArray; ones(1, 360/downSample)];
-%                     plot(wp(1, :), wp(2, :), 'og');hold on;
-%                 end
-%             end
-            
+
             [finalX, finalY, ~] = traj.getPoseAtTime(currentTime);
             xError = obj.xPos(obj.index)-finalX;
             yError = obj.yPos(obj.index)-finalY;
@@ -278,7 +260,7 @@ classdef vaderBot
             plot(follower.time, follower.error, '-r');
             
         end
-
+        
     end
     
 end
