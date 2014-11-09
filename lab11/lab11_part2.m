@@ -43,7 +43,7 @@ finalPose = r.getPose();
 finalPose.x
 finalPose.y
 finalPose.th
-% 
-% % back up 15 centimeters, then turn 180 degrees
-% r.moveRelDistance(-.15);
-% r.moveRelAngle(pi);
+
+% back up 15 centimeters, then turn 180 degrees
+r.moveRelDistance(-.15);
+r.moveRelAngle(pi);
