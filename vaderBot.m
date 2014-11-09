@@ -151,18 +151,18 @@ classdef vaderBot
                 w = (vR - vL)/vaderBot.W;
                 V = (vR + vL)/2;
                 
-                x1 = V*cos(obj.theta(obj.index));
-                y1 = V*sin(obj.theta(obj.index));
-                
-                x2 = V*cos(obj.theta(obj.index)+w*dt/2);
-                y2 = V*sin(obj.theta(obj.index)+w*dt/2);
-                
-                x4 = V*cos(obj.theta(obj.index)+w*dt);
-                y4 = V*sin(obj.theta(obj.index)+w*dt);
-                
-                obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
-                obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
-                obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
+%                 x1 = V*cos(obj.theta(obj.index));
+%                 y1 = V*sin(obj.theta(obj.index));
+%                 
+%                 x2 = V*cos(obj.theta(obj.index)+w*dt/2);
+%                 y2 = V*sin(obj.theta(obj.index)+w*dt/2);
+%                 
+%                 x4 = V*cos(obj.theta(obj.index)+w*dt);
+%                 y4 = V*sin(obj.theta(obj.index)+w*dt);
+%                 
+%                 obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
+%                 obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
+%                 obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
                 
                 
                 tempTheta = obj.theta(obj.index) + w*dt/2;
@@ -215,7 +215,7 @@ classdef vaderBot
         % execute a trajectory to a pose specified in robot coordinates
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
-            path.planVelocities(.2);
+            path.planVelocities(.1);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
@@ -243,15 +243,18 @@ classdef vaderBot
             
             timer = tic;
             currentTime = toc(timer);
-            i = 0;
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
-                eL = leftEncoder - prevLeftEncoder;
-                eR = rightEncoder - prevRightEncoder;
-                dt = timeStamp - prevTimeStamp;
+                obj.robot.encoders.data.left
+                newLE = leftEncoder;
+                newRE = rightEncoder;
+                newTS = timeStamp;
+                eL = newLE - prevLeftEncoder;
+                eR = newRE - prevRightEncoder;
+                dt = newTS - prevTimeStamp;
                 
-                prevLeftEncoder = leftEncoder;
-                prevRightEncoder = rightEncoder;
-                prevTimeStamp = timeStamp;
+                prevLeftEncoder = newLE;
+                prevRightEncoder = newRE;
+                prevTimeStamp = newTS;
                 
                 obj = obj.processOdometryData(eL, eR, dt);
                 
@@ -259,15 +262,13 @@ classdef vaderBot
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
                 
                 obj.drive(vl, vr);
-                
                 % process range data
-                if (useMap && mod(i,10) == 0)
+                if (useMap)
                     ranges = obj.robot.laser.data.ranges;
                     downSample = 10;
                     image = rangeImage(ranges, downSample, false);
                     [obj, success] = obj.processRangeImage(image);
                 end
-                i = i+1;
                 pause(.005);
             end
             

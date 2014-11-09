@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('nano');
+robot = neato('mega');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -37,7 +37,12 @@ end
 % go to object
 [xNew, yNew, thNew] = targetTransform(x,y,th)
 newPose = pose(xNew, yNew, thNew);
-r.executeTrajectoryToRelativePose(newPose, 1);
+[r, error] = r.executeTrajectoryToRelativePose(newPose, 1);
+
+finalPose = r.getPose();
+finalPose.x
+finalPose.y
+finalPose.th
 % 
 % % back up 15 centimeters, then turn 180 degrees
 % r.moveRelDistance(-.15);
