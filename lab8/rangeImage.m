@@ -71,33 +71,22 @@ classdef rangeImage < handle
         function [bestX, bestY, bestTh] = findObject(obj, maxLen)
             bestErr = intmax;
             bestTh = 0;
-            bestI = 0;
             bestLen = 0;
             bestX = 0;
             bestY = 0;
             for i = 1:size(obj.tArray,2)
                 [err, ~, th, len, x, y] = obj.findLineCandidate(i, maxLen);
-                disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
+%                 disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
                 if (err < bestErr && len > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
-                    disp(['***********found better********** ', int2str(i)]);
+%                     disp(['***********found better********** ', int2str(i)]);
 %                     disp(obj.rArray(i));
                     bestErr = err;
                     bestTh = th;
-                    bestI = i;
                     bestLen = len;
                     bestX = x;
                     bestY = y;
                 end
             end
-%             if bestI == 0
-%                 x = 0;
-%                 y = 0;
-%                 theta = 0;
-%             else
-%                 x = obj.xArray(bestI);
-%                 y = obj.yArray(bestI);
-%                 theta = bestTh;
-%             end
         end
         
         function [err, num, th, len, x, y] = findLineCandidate(obj,middle,maxLen)
@@ -110,6 +99,8 @@ classdef rangeImage < handle
             %  search in both directions, two pixels at a time, to find two
             % points separated by a maximum length less than maxLen
             len = 0;
+            x = 0;
+            y = 0;
             leftIndex = middle;
             rightIndex = middle;
             numpixels = 1;
@@ -120,7 +111,7 @@ classdef rangeImage < handle
                 yLeft = obj.yArray(leftIndex);
                 xRight = obj.xArray(rightIndex);
                 yRight = obj.yArray(rightIndex);
-                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2)
+                len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
                 numpixels = numpixels + 2;
                 if (numpixels > length(obj.xArray))
                     numpixels = numpixels - 2;
@@ -128,10 +119,9 @@ classdef rangeImage < handle
                     rightIndex = obj.dec(rightIndex);
                     break;
                 end
-                len < maxLen
             end
             
-            disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
+%             disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
 
             if (numpixels > 1)
                 numpixels = numpixels-2;
@@ -147,7 +137,7 @@ classdef rangeImage < handle
                     num = 0;
                     err = NaN;
                     th = 1;
-                    disp('failing here');
+%                     disp('failing here');
                     return;
                 end
             end
@@ -158,13 +148,13 @@ classdef rangeImage < handle
             yRight = obj.yArray(rightIndex);
             len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
             
-            disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
+%             disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
 
             if (len > 2*maxLen || numpixels == 1)
                 num = 0;
                 err = NaN;
                 th = 1;
-                disp('returning here');
+%                 disp('returning here');
                 return;
             end
             

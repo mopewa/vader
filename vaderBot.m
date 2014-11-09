@@ -78,8 +78,6 @@ classdef vaderBot
             senToRob = pose(vaderBot.laser_l,0,0);
             robToWorld = senPose.bToA()*senToRob.aToB();
         end
-        
-        
     end
     
     methods
@@ -183,7 +181,50 @@ classdef vaderBot
             end
         end
         
+        % turn in place by a given angle
+        function [obj, totalError] = moveRelAngle(obj, theta)
+            sign = 1;
+            if (theta < 0)
+                theta = abs(theta);
+                sign = -1;
+            end
+            vmax = min(theta, 1);
+            path = trapezoidalStepAngleControl(.75, vmax, theta, sign, 1);
+            [obj, totalError] = obj.executeTrajectory2(path, 1, 1);
+        end
+        
+        % move a fixed straight line distance relative to the robot
+        function [obj, totalError] = moveRelDistance(obj, dist)
+            sign = 1;
+            if dist < 0
+                dist = abs(dist);
+                sign = -1;
+            end
+            % pass dist as vmax so that trajectory takes at least a second
+            vmax = min(dist, .25);
+            path = trapezoidalStepReferenceControl(.75, vmax, dist, sign, 1);
+            [obj, totalError] = obj.executeTrajectory(path, 1);
+        end
+        
+        % execute a trajectory to a pose specified in world coordinates
+        function [obj, totalError] = executeTrajectoryToAbsolutePose(obj, pose, useMap)
+            relPose = pose(r.getPose().aToB()*pose2.bToA());
+            [obj, totalError] = obj.executeTrajectoryToRelativePose(relPose, useMap);
+        end
+        
+        % execute a trajectory to a pose specified in robot coordinates
+        function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
+            path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
+            path.planVelocities(.2);
+            [obj, totalError] = obj.executeTrajectory(path, useMap);
+        end
+        
+        % for backwards-compatability, for non turn-in-place trajectories
         function [obj, totalError] = executeTrajectory(obj, trajectory, useMap)
+            [obj, totalError] = obj.executeTrajectory2(trajectory, useMap, 0);
+        end
+        
+        function [obj, totalError] = executeTrajectory2(obj, trajectory, useMap, turnInPlace)
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
@@ -193,6 +234,8 @@ classdef vaderBot
             traj = robotTrajectory(trajectory, startPose, 0);
             
             follower = trajectoryFollower(traj, startPose);
+            % use theta-only controller for turn-in-place trajectories
+            follower = follower.setTurnInPlace(turnInPlace);
             
             prevLeftEncoder = leftEncoder;
             prevRightEncoder = rightEncoder;
@@ -218,12 +261,13 @@ classdef vaderBot
                 obj.drive(vl, vr);
                 
                 % process range data
-                if (useMap)
+                if (useMap && mod(i,10) == 0)
                     ranges = obj.robot.laser.data.ranges;
                     downSample = 10;
                     image = rangeImage(ranges, downSample, false);
                     [obj, success] = obj.processRangeImage(image);
                 end
+                i = i+1;
                 pause(.005);
             end
             

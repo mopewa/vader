@@ -4,6 +4,7 @@ classdef controller
     properties
         robotTrajectory     % the trajectory to follow
         startPose
+        turnInPlace = 0; % use only kth for turn-in-place trajectory
     end
     
     properties (Constant)
@@ -13,6 +14,7 @@ classdef controller
         %        ky = 3;
         kx = .25;
         ky = 1.5;
+        kth = 1;
     end
     
     methods
@@ -26,47 +28,33 @@ classdef controller
             % following robotTrajectory.
             % Currently, this uses a three degree of freedom linear controller.
             [goalX, goalY, goalTheta] = obj.robotTrajectory.getPoseAtTime(t);
-            curX = r.xPos(r.index);
-            curY = r.yPos(r.index);
-            curTheta = r.theta(r.index);
+            curPose = r.getPose();
+            goalPose = pose(goalX,goalY,goalTheta);
             
-            %{
-            sX = obj.startPose(1);
-            sY = obj.startPose(2);
-            sTheta = obj.startPose(3);
-
-            GToS = [cos(goalTheta), -sin(goalTheta), goalX; sin(goalTheta), cos(goalTheta), goalY; 0 0 1];
-            RToS = [cos(curTheta), -sin(curTheta), curX; sin(curTheta), cos(curTheta), curY; 0 0 1];
-            SToW = [cos(sTheta), -sin(sTheta), sX; sin(sTheta), cos(sTheta), sY; 0 0 1];
-            
-            GToW = SToW * GToS;
-            RToW = SToW * RToS;
-            
-            goalX = GToW(1,3);
-            goalY = GToW(2,3);
-            goalTheta = atan2(GToW(2,1), GToW(1,1));
-            
-            curX = RToW(1,3);
-            curY = RToW(2,3);
-            curTheta = atan2(RToW(2,1), RToW(1,1));
-            %}
-            
-            posErrorWorldFrame = [goalX - curX; goalY - curY];
-            % assumes starting theta is 0 and aligns with world frame
-            A = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
-            if (rank(A) < 2)
-                disp('Not Invertable');
-                A
+            errorPose = pose.subtractPoses(curPose, goalPose);
+            e = sqrt(errorPose.x^2+errorPose.y^2);
+            % use theta-only controller for turn-in-place trajectories
+            if (obj.turnInPlace) 
+                errorPose.th;
+                u_p = [0, errorPose.th*controller.kth];
+            else 
+                curTheta = curPose.th;
+                posErrorWorldFrame = [errorPose.x; errorPose.y];
+                % assumes starting theta is 0 and aligns with world frame
+                A = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
+                if (rank(A) < 2)
+                    disp('Not Invertable');
+                    A
+                end
+                transformation = A\eye(size(A));
+                posErrorRobotFrame = transformation * posErrorWorldFrame;
+                if (e <= .05)
+                    control = [controller.kx, 0; 0, 0];
+                else
+                    control = [controller.kx, 0; 0, controller.ky];
+                end
+                u_p = control * posErrorRobotFrame;
             end
-            transformation = A\eye(size(A));
-            posErrorRobotFrame = transformation * posErrorWorldFrame;
-            e = sqrt((goalX - curX)^2 + (goalY - curY)^2);
-            if (e <= .05)
-                control = [controller.kx, 0; 0, 0];
-            else
-                control = [controller.kx, 0; 0, controller.ky];
-            end
-            u_p = control * posErrorRobotFrame;
         end
     end
     

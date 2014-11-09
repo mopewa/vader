@@ -21,6 +21,10 @@ classdef trajectoryFollower
             obj.feedback = true;
         end
         
+        function obj = setTurnInPlace(obj, turnInPlace)
+            obj.feedbackController.turnInPlace = turnInPlace;
+        end
+        
         function [vl, vr, obj] = getVelocity(obj, t, vaderBot)
             % get feedforward velocity
             [V, w] = obj.robotTrajectory.getVelocityAtTime(t);
