@@ -185,15 +185,19 @@ classdef lineMapLocalizer < handle
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
                 
+                if (isnan(inPose.th))
+                    disp('In Refine NaN');
+                    -obj.gain*grad
+                end
             end
-            plot(inPose.x, inPose.y, 'xg');
+%             plot(inPose.x, inPose.y, 'xg');
             outPose = pose(vaderBot.robToWorld(inPose));
-            temp = outPose.bToA()*obj.body;
-            plot([0 0], [0 1.2192], 'r');hold on;
-            plot([0 1.2192], [0 0], 'r');hold on;
-            plot(temp(1, :), temp(2, :));hold on;
-            axis equal;
-            pause(.1);
+%             temp = outPose.bToA()*obj.body;
+%             plot([0 0], [0 1.2192], 'r');hold on;
+%             plot([0 1.2192], [0 0], 'r');hold on;
+%             plot(temp(1, :), temp(2, :));hold on;
+%             axis equal;
+%             pause(.1);
         end
     end
 end

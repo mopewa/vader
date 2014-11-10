@@ -133,6 +133,14 @@ classdef vaderBot
             fractionPose = pose(.25 * subPose.x, .25*subPose.y, .25*subPose.th);
             poseFused = pose.addPoses(curPose, fractionPose);
             
+            if (isnan(poseFused.th) || isinf(poseFused.th))
+                disp('AHHHHHH');
+                fractionPose.th
+                subPose.th
+                poseMap.th
+                pause(10);
+            end
+         
             obj = obj.setPose(poseFused);
         end
         
@@ -244,7 +252,7 @@ classdef vaderBot
             timer = tic;
             currentTime = toc(timer);
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
-                obj.robot.encoders.data.left
+                obj.robot.encoders.data.left;
                 newLE = leftEncoder;
                 newRE = rightEncoder;
                 newTS = timeStamp;

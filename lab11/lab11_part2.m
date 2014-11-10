@@ -1,14 +1,17 @@
-clc;
 
-robot = neato('mega');
-
-lh = event.listener(robot.encoders, 'OnMessageReceived', ...
-    @basicEncoderListener);
-
-r = vaderBot(.5, .5, pi()/2.0, robot);
-
-robot.startLaser();
-pause(10);
+% Done in setup.m so we dont have to start our code with a 10s pause
+%
+% clc;
+% 
+% robot = neato('mega');
+% 
+% lh = event.listener(robot.encoders, 'OnMessageReceived', ...
+%     @basicEncoderListener);
+% 
+% r = vaderBot(.5, .5, pi()/2.0, robot);
+% 
+% robot.startLaser();
+% pause(10);
 
 % create map
 endpoints1 = [[0 ; 0] [0 ; 0]];
@@ -18,7 +21,7 @@ r = r.setLocalizer(localizer);
 
 % 5 seconds of gradient descent to acurately localize
 timer = tic;
-while(toc(timer) < 5)
+while(toc(timer) < 3)
     ranges = robot.laser.data.ranges;
     downSample = 10;
     image = rangeImage(ranges, downSample, false);
@@ -30,7 +33,7 @@ foundLine = 0;
 while (~foundLine)
     ranges = robot.laser.data.ranges;
     image = rangeImage(ranges, 1, 1);
-    [x,y,th] = image.findObject(.5125); % not sure where this number comes from, taken from lab 8
+    [x,y,th] = image.findObject(.14); % not sure where this number comes from, taken from lab 8
     foundLine = x || y;
 end
 
