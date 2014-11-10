@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('mega');
+robot = neato('giga');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);

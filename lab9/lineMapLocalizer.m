@@ -14,9 +14,9 @@ classdef lineMapLocalizer < handle
     properties(Access = public)
         lines_p1 = [];
         lines_p2 = [];
-        gain = 0.0;
-        errThresh = 0.0;
-        gradThresh = 0.0;
+        gain = 0.01;
+        errThresh = 0.001;
+        gradThresh = 0.0005;
         % Values used by Kelly:
         % gain = 0.01;
         % errThresh = 0.001;
@@ -152,7 +152,11 @@ classdef lineMapLocalizer < handle
             errY = fitError(obj, newPoseY, modelPts);
             errT = fitError(obj, newPoseT, modelPts);
             
-            J = [1/eps * (errX-errPlus0), 1/eps * (errY-errPlus0), 1/eps * (errT-errPlus0)];
+            if(isnan(errX-errPlus0) || isnan(errY-errPlus0) || isnan(errT-errPlus0))
+                J = [0, 0, 0];
+            else
+                J = [1/eps * (errX-errPlus0), 1/eps * (errY-errPlus0), 1/eps * (errT-errPlus0)];
+            end
         end
         
         function [success, outPose] = refinePose(obj,inPose,ptsInModelFrame,maxIters)
@@ -181,14 +185,9 @@ classdef lineMapLocalizer < handle
                     break;
                 end
                 
-                change = -obj.gain*grad;
+                change = -obj.gain*grad;       
                 inPose = pose(inPose.x+change(1), inPose.y+change(2), inPose.th+change(3));
                 [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);
-                
-                if (isnan(inPose.th))
-                    disp('In Refine NaN');
-                    -obj.gain*grad
-                end
             end
 %             plot(inPose.x, inPose.y, 'xg');
             outPose = pose(vaderBot.robToWorld(inPose));

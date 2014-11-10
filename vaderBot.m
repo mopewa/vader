@@ -105,18 +105,36 @@ classdef vaderBot
         
         function drive(obj, lVeloc, rVeloc)
             if lVeloc > .3 || rVeloc > .3
-                disp('adjusting velocity');
+                disp('adjusting velocity too high');
+                lVeloc = min(lVeloc, .3)
+                rVeloc = min(rVeloc, .3)
+            elseif lVeloc < -0.3 || rVeloc < -0.3
+                disp('adjusting velocity too low');
+                lVeloc = max(lVeloc, -0.3)
+                rVeloc = max(rVeloc, -0.3)
             end
-            lVeloc = min(lVeloc, .3);
-            rVeloc = min(rVeloc, .3);
+            
+            if lVeloc > .3 || rVeloc > .3
+                disp('adjusting velocity too high');
+                lVeloc = min(lVeloc, .3)
+                rVeloc = min(rVeloc, .3)
+            elseif lVeloc < -0.3 || rVeloc < -0.3
+                disp('adjusting velocity too low');
+                lVeloc = max(lVeloc, -0.3)
+                rVeloc = max(rVeloc, -0.3)
+            end
+            
             obj.robot.sendVelocity(lVeloc, rVeloc);
         end
         
         function obj = setPose(obj, pose)
-            obj.xPos(obj.index) = pose.x;
-            obj.yPos(obj.index) = pose.y;
-            obj.theta(obj.index) = pose.th;
-            % why doesn't this update index?
+            if(abs(pose.x-obj.getPose.x) < 0.20 || abs(pose.y-obj.getPose.y) < 0.2)
+                obj.xPos(obj.index+1) = pose.x;
+                obj.yPos(obj.index+1) = pose.y;
+                obj.theta(obj.index+1) = pose.th;
+                obj.time(obj.index+1) = obj.time(obj.index);
+                obj.index = obj.index + 1;
+            end
         end
         
         function curPose = getPose(obj)
@@ -134,9 +152,6 @@ classdef vaderBot
             poseFused = pose.addPoses(curPose, fractionPose);
             
             if (isnan(poseFused.th) || isinf(poseFused.th))
-                disp('AHHHHHH');
-                fractionPose.th
-                subPose.th
                 poseMap.th
                 pause(10);
             end
@@ -223,7 +238,7 @@ classdef vaderBot
         % execute a trajectory to a pose specified in robot coordinates
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
-            path.planVelocities(.1);
+            path.planVelocities(.15);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
@@ -271,7 +286,7 @@ classdef vaderBot
                 
                 obj.drive(vl, vr);
                 % process range data
-                if (useMap)
+                if (useMap && currentTime < trajectory.getTrajectoryDuration() - 0.2)
                     ranges = obj.robot.laser.data.ranges;
                     downSample = 10;
                     image = rangeImage(ranges, downSample, false);

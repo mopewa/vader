@@ -7,7 +7,7 @@ function [ x, y, th ] = targetTransform( x0, y0 ,th0 )
     % describes pose of object relative to sensor
     Tso = [cos(th0), -sin(th0), x0; sin(th0), cos(th0), y0; 0, 0, 1];
     % describes pose of sensor relative to robot
-    Trs = [1, 0, -0.1; 0, 1, 0; 0, 0, 1];
+    Trs = [1, 0, -0.11; 0, 1, 0; 0, 0, 1];
     
     Tf = Trs * Tso * Tog;
     

@@ -74,17 +74,34 @@ classdef rangeImage < handle
             bestLen = 0;
             bestX = 0;
             bestY = 0;
+            err = zeros(1, size(obj.tArray,2));
+            num = zeros(1, size(obj.tArray,2));
+            len = zeros(1, size(obj.tArray,2));
+            th = zeros(1, size(obj.tArray,2));
+            x = zeros(1, size(obj.tArray,2));
+            y = zeros(1, size(obj.tArray,2));
+            
             for i = 1:size(obj.tArray,2)
-                [err, ~, th, len, x, y] = obj.findLineCandidate(i, maxLen);
+                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);                
 %                 disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
-                if (err < bestErr && len > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5)
-%                     disp(['***********found better********** ', int2str(i)]);
+            end
+            for i = 1:size(obj.tArray,2)
+                
+                %Currently throwing out values for i not between 100 and 250 
+                peak = false;
+                if (num(i) > num(obj.incStep(i,3))+3 && num(i) > num(obj.decStep(i,3))+3 && i > 100 && i < 250)
+                    peak = true;
+                    disp('peak found');
+                    i
+                end
+                if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
+                     disp(['***********found better********** ', int2str(i)]);
 %                     disp(obj.rArray(i));
-                    bestErr = err;
-                    bestTh = th;
-                    bestLen = len;
-                    bestX = x;
-                    bestY = y;
+                    bestErr = err(i);
+                    bestTh = th(i);
+                    bestLen = len(i);
+                    bestX = x(i);
+                    bestY = y(i);
                 end
             end
         end
@@ -235,6 +252,16 @@ classdef rangeImage < handle
         function out = dec(obj,in)
             % decrement with wraparound over natural numbers
             out = indexAdd(obj,in,-1);
+        end
+        
+        function out = incStep(obj,in,step)
+            % increment with wraparound over natural numbers
+            out = indexAdd(obj,in,step);
+        end
+        
+        function out = decStep(obj,in,step)
+            % decrement with wraparound over natural numbers
+            out = indexAdd(obj,in,-step);
         end
         
         function out = indexAdd(obj,a,b)

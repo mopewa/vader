@@ -1,17 +1,17 @@
 
 % Done in setup.m so we dont have to start our code with a 10s pause
-%
-% clc;
-% 
-% robot = neato('mega');
-% 
-% lh = event.listener(robot.encoders, 'OnMessageReceived', ...
-%     @basicEncoderListener);
-% 
-% r = vaderBot(.5, .5, pi()/2.0, robot);
-% 
-% robot.startLaser();
-% pause(10);
+
+clc;
+
+robot = neato('giga');
+
+lh = event.listener(robot.encoders, 'OnMessageReceived', ...
+    @basicEncoderListener);
+
+r = vaderBot(.5, .5, pi()/2.0, robot);
+
+robot.startLaser();
+pause(10);
 
 % create map
 endpoints1 = [[0 ; 0] [0 ; 0]];
@@ -20,13 +20,19 @@ localizer = lineMapLocalizer(endpoints1, endpoints2, 0.1, 0.001, 0.0005);
 r = r.setLocalizer(localizer);
 
 % 5 seconds of gradient descent to acurately localize
-timer = tic;
-while(toc(timer) < 3)
-    ranges = robot.laser.data.ranges;
-    downSample = 10;
-    image = rangeImage(ranges, downSample, false);
-    [r, success] = r.processRangeImage(image);
-end
+% timer = tic;
+% while(toc(timer) < 5)
+%     ranges = robot.laser.data.ranges;
+%     downSample = 10;
+%     image = rangeImage(ranges, downSample, false);
+%     [r, success] = r.processRangeImage(image);
+%     pause(0.2);
+% end
+ranges = robot.laser.data.ranges;
+downSample = 10;
+image = rangeImage(ranges, downSample, false);
+[r, success] = r.processRangeImage(image);
+pause(0.1);
 
 % find object in range image
 foundLine = 0;

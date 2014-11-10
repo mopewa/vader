@@ -12,7 +12,7 @@ classdef controller
         % ky = 1.175;             % y-dimension proportional control
         %        kx = 2;
         %        ky = 3;
-        kx = .25;
+        kx = .03;
         ky = 1.5;
         kth = 1;
     end
@@ -39,21 +39,27 @@ classdef controller
                 u_p = [0, errorPose.th*controller.kth];
             else 
                 curTheta = curPose.th;
-                posErrorWorldFrame = [errorPose.x; errorPose.y];
-                % assumes starting theta is 0 and aligns with world frame
-                A = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
-                if (rank(A) < 2)
-                    disp('Not Invertable');
-                    A
-                end
-                transformation = A\eye(size(A));
-                posErrorRobotFrame = transformation * posErrorWorldFrame;
-                if (e <= .05)
-                    control = [controller.kx, 0; 0, 0];
+                
+                if(isinf(curTheta) || isnan(curTheta))
+                    u_p = [0; 0];
+                    disp('Theta Error Skipping Controller');
                 else
-                    control = [controller.kx, 0; 0, controller.ky];
+                    posErrorWorldFrame = [errorPose.x; errorPose.y];
+                    % assumes starting theta is 0 and aligns with world frame
+                    A = [cos(curTheta), -sin(curTheta); sin(curTheta), cos(curTheta)];
+                    if (rank(A) < 2)
+                        disp('Not Invertable');
+                        A
+                    end
+                    transformation = A\eye(size(A));
+                    posErrorRobotFrame = transformation * posErrorWorldFrame;
+                    if (e <= .05)
+                        control = [controller.kx, 0; 0, 0];
+                    else
+                        control = [controller.kx, 0; 0, controller.ky];
+                    end
+                    u_p = control * posErrorRobotFrame;
                 end
-                u_p = control * posErrorRobotFrame;
             end
         end
     end
