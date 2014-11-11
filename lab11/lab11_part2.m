@@ -53,6 +53,8 @@ for i = 1:3
     finalPose.x
     finalPose.y
     finalPose.th
+    
+    pause(15);
 
     % back up 15 centimeters, then turn 180 degrees
     r.moveRelDistance(-.15);
