@@ -28,31 +28,34 @@ r = r.setLocalizer(localizer);
 %     [r, success] = r.processRangeImage(image);
 %     pause(0.2);
 % end
-ranges = robot.laser.data.ranges;
-downSample = 10;
-image = rangeImage(ranges, downSample, false);
-[r, success] = r.processRangeImage(image);
-pause(0.1);
-
-% find object in range image
-foundLine = 0;
-while (~foundLine)
+for i = 1:3
     ranges = robot.laser.data.ranges;
-    image = rangeImage(ranges, 1, 1);
-    [x,y,th] = image.findObject(.14); % not sure where this number comes from, taken from lab 8
-    foundLine = x || y;
+    downSample = 10;
+    image = rangeImage(ranges, downSample, false);
+    [r, success] = r.processRangeImage(image);
+    pause(0.1);
+
+    % find object in range image
+    foundLine = 0;
+    while (~foundLine)
+        ranges = robot.laser.data.ranges;
+        image = rangeImage(ranges, 1, 1);
+        [x,y,th] = image.findObject(.14); % not sure where this number comes from, taken from lab 8
+        foundLine = x || y;
+    end
+
+    % go to object
+    [xNew, yNew, thNew] = targetTransform(x,y,th)
+    newPose = pose(xNew, yNew, thNew);
+    [r, error] = r.executeTrajectoryToRelativePose(newPose, 1);
+
+    finalPose = r.getPose();
+    finalPose.x
+    finalPose.y
+    finalPose.th
+
+    % back up 15 centimeters, then turn 180 degrees
+    r.moveRelDistance(-.15);
+    r.moveRelAngle(pi);
+    pause(30);
 end
-
-% go to object
-[xNew, yNew, thNew] = targetTransform(x,y,th)
-newPose = pose(xNew, yNew, thNew);
-[r, error] = r.executeTrajectoryToRelativePose(newPose, 1);
-
-finalPose = r.getPose();
-finalPose.x
-finalPose.y
-finalPose.th
-
-% back up 15 centimeters, then turn 180 degrees
-r.moveRelDistance(-.15);
-r.moveRelAngle(pi);
