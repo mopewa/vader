@@ -106,22 +106,22 @@ classdef vaderBot
         function drive(obj, lVeloc, rVeloc)
             if lVeloc > .3 || rVeloc > .3
                 disp('adjusting velocity too high');
-                lVeloc = min(lVeloc, .3)
-                rVeloc = min(rVeloc, .3)
+                lVeloc = min(lVeloc, .3);
+                rVeloc = min(rVeloc, .3);
             elseif lVeloc < -0.3 || rVeloc < -0.3
                 disp('adjusting velocity too low');
-                lVeloc = max(lVeloc, -0.3)
-                rVeloc = max(rVeloc, -0.3)
+                lVeloc = max(lVeloc, -0.3);
+                rVeloc = max(rVeloc, -0.3);
             end
             
             if lVeloc > .3 || rVeloc > .3
                 disp('adjusting velocity too high');
-                lVeloc = min(lVeloc, .3)
-                rVeloc = min(rVeloc, .3)
+                lVeloc = min(lVeloc, .3);
+                rVeloc = min(rVeloc, .3);
             elseif lVeloc < -0.3 || rVeloc < -0.3
                 disp('adjusting velocity too low');
-                lVeloc = max(lVeloc, -0.3)
-                rVeloc = max(rVeloc, -0.3)
+                lVeloc = max(lVeloc, -0.3);
+                rVeloc = max(rVeloc, -0.3);
             end
             
             obj.robot.sendVelocity(lVeloc, rVeloc);
@@ -317,7 +317,7 @@ classdef vaderBot
             xError = obj.xPos(obj.index)-finalX;
             yError = obj.yPos(obj.index)-finalY;
             totalError = sqrt(xError^2 + yError^2);
-            
+            %{
             figure(5);
             hold on;
             plot(obj.xPos, obj.yPos, 'b');
@@ -326,6 +326,7 @@ classdef vaderBot
             plot(obj.xTrajectories, obj.yTrajectories, 'g');
             figure(6);
             plot(follower.time, follower.error, '-r');
+            %}
             
         end
         

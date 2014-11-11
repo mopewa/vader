@@ -1,6 +1,3 @@
-
-% Done in setup.m so we dont have to start our code with a 10s pause
-
 clc;
 
 robot = neato('giga');
@@ -11,7 +8,7 @@ lh = event.listener(robot.encoders, 'OnMessageReceived', ...
 r = vaderBot(.5, .5, pi()/2.0, robot);
 
 robot.startLaser();
-pause(10);
+pause(3);
 
 % create map
 endpoints1 = [[0 ; 0] [0 ; 0]];
@@ -45,10 +42,10 @@ for i = 1:3
     end
 
     % go to object
-    [xNew, yNew, thNew] = targetTransform(x,y,th)
+    [xNew, yNew, thNew] = targetTransform(x,y,th);
     newPose = pose(xNew, yNew, thNew);
     [r, error] = r.executeTrajectoryToRelativePose(newPose, 1);
-
+    
     finalPose = r.getPose();
     finalPose.x
     finalPose.y
@@ -59,5 +56,5 @@ for i = 1:3
     % back up 15 centimeters, then turn 180 degrees
     r.moveRelDistance(-.15);
     r.moveRelAngle(pi);
-    pause(30);
+    pause(15);
 end

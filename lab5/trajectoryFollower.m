@@ -29,9 +29,9 @@ classdef trajectoryFollower
             % get feedforward velocity
             [V, w] = obj.robotTrajectory.getVelocityAtTime(t);
             
-            % get feedback adjustment
+            % get feedback adjustment            
+            [u_p, e] = obj.feedbackController.getVelocity(t, vaderBot);
             if (obj.feedback)
-                [u_p, e] = obj.feedbackController.getVelocity(t, vaderBot);
                 V = V + u_p(1);
                 w = w + u_p(2);
             end

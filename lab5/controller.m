@@ -12,7 +12,10 @@ classdef controller
         % ky = 1.175;             % y-dimension proportional control
         %        kx = 2;
         %        ky = 3;
-        kx = .03;
+        %kx = .03;
+        %ky = 1.5;
+        %kth = 1;
+        kx = .012;
         ky = 1.5;
         kth = 1;
     end

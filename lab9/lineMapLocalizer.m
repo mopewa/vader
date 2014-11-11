@@ -167,9 +167,9 @@ classdef lineMapLocalizer < handle
             % any changes that reduced the fit error. Pose changes that
             % increase fit error are not included and termination
             % occurs thereafter.
-            clf;
+            %clf;
             inPose = pose(vaderBot.senToWorld(inPose));
-            plot(inPose.x, inPose.y, 'rx');hold on;
+          % plot(inPose.x, inPose.y, 'rx');hold on;
             ids = obj.throwOutliers(inPose, ptsInModelFrame);
             ptsInModelFrame(:,ids)=[];
             [err, grad] = obj.getJacobian(inPose, ptsInModelFrame);

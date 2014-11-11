@@ -89,7 +89,7 @@ classdef rangeImage < handle
                 
                 %Currently throwing out values for i not between 100 and 250 
                 peak = false;
-                if (num(i) > num(obj.incStep(i,3))+3 && num(i) > num(obj.decStep(i,3))+3 && i > 100 && i < 250)
+                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
                     peak = true;
                     disp('peak found');
                     i
