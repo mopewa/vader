@@ -30,15 +30,15 @@ classdef controller
             % compute the feedback for a robot r that should be
             % following robotTrajectory.
             % Currently, this uses a three degree of freedom linear controller.
-            [goalX, goalY, goalTheta] = obj.robotTrajectory.getPoseAtTime(t);
+            [goalX, goalY, goalTheta] = obj.robotTrajectory.getPoseAtTime(t-.3);
             curPose = r.getPose();
             goalPose = pose(goalX,goalY,goalTheta);
             
             errorPose = pose.subtractPoses(curPose, goalPose);
             e = sqrt(errorPose.x^2+errorPose.y^2);
-            % use theta-only controller for turn-in-place trajectories
+            
             if (obj.turnInPlace) 
-                errorPose.th;
+                % theta-only controller
                 u_p = [0, errorPose.th*controller.kth];
             else 
                 curTheta = curPose.th;
@@ -57,11 +57,14 @@ classdef controller
                     transformation = A\eye(size(A));
                     posErrorRobotFrame = transformation * posErrorWorldFrame;
                     if (e <= .05)
-                        control = [controller.kx, 0; 0, 0];
+                        % x-theta controller
+                        u_p = [controller.kx*posErrorRobotFrame(1); ...
+                            controller.kth*errorPose.th];
                     else
+                        % x-y controller
                         control = [controller.kx, 0; 0, controller.ky];
+                        u_p = control * posErrorRobotFrame;
                     end
-                    u_p = control * posErrorRobotFrame;
                 end
             end
         end

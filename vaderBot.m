@@ -142,8 +142,8 @@ classdef vaderBot
         end
         
         % updates the robot's state when new laser range data arrives
-        function [obj, success] = processRangeImage(obj, image)
-            maxIters = 10;
+        function [obj, success] = processRangeImage(obj, image, maxIters)
+%             maxIters = 10;
             curPose = obj.getPose();
             [success, poseMap] = obj.localizer.refinePose(curPose,[image.xArray; image.yArray; ones(size(image.xArray))],maxIters);
             
@@ -212,7 +212,7 @@ classdef vaderBot
                 sign = -1;
             end
             vmax = min(theta, 1);
-            path = trapezoidalStepAngleControl(.75, vmax, theta, sign, 1);
+            path = trapezoidalStepAngleControl(.75, vmax, theta, sign, 0);
             [obj, totalError] = obj.executeTrajectory2(path, 1, 1);
         end
         
@@ -225,7 +225,7 @@ classdef vaderBot
             end
             % pass dist as vmax so that trajectory takes at least a second
             vmax = min(dist, .25);
-            path = trapezoidalStepReferenceControl(.75, vmax, dist, sign, 1);
+            path = trapezoidalStepReferenceControl(.75, vmax, dist, sign, 0);
             [obj, totalError] = obj.executeTrajectory(path, 1);
         end
         
@@ -239,6 +239,7 @@ classdef vaderBot
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
             path.planVelocities(.15);
+            pause(5);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
@@ -263,11 +264,11 @@ classdef vaderBot
             prevLeftEncoder = leftEncoder;
             prevRightEncoder = rightEncoder;
             prevTimeStamp = timeStamp;
-            
+
             timer = tic;
             currentTime = toc(timer);
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
-                obj.robot.encoders.data.left;
+                
                 newLE = leftEncoder;
                 newRE = rightEncoder;
                 newTS = timeStamp;
@@ -280,7 +281,7 @@ classdef vaderBot
                 prevTimeStamp = newTS;
                 
                 obj = obj.processOdometryData(eL, eR, dt);
-                
+
                 currentTime = toc(timer);
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
                 
@@ -290,7 +291,7 @@ classdef vaderBot
                     ranges = obj.robot.laser.data.ranges;
                     downSample = 10;
                     image = rangeImage(ranges, downSample, false);
-                    [obj, success] = obj.processRangeImage(image);
+                    [obj, success] = obj.processRangeImage(image, 10);
                 end
                 pause(.005);
             end
@@ -304,7 +305,7 @@ classdef vaderBot
             prevTimeStamp = timeStamp;
             
             obj = obj.updateState(eL, eR, dt);
-            
+
             obj.drive(0,0);
             
             eL = leftEncoder - prevLeftEncoder;
@@ -317,19 +318,18 @@ classdef vaderBot
             xError = obj.xPos(obj.index)-finalX;
             yError = obj.yPos(obj.index)-finalY;
             totalError = sqrt(xError^2 + yError^2);
-            %{
-            figure(5);
-            hold on;
-            plot(obj.xPos, obj.yPos, 'b');
-            obj.xTrajectories = [obj.xTrajectories, traj.poses(:,1)'];
-            obj.yTrajectories = [obj.yTrajectories, traj.poses(:,2)'];
-            plot(obj.xTrajectories, obj.yTrajectories, 'g');
-            figure(6);
-            plot(follower.time, follower.error, '-r');
-            %}
+            
+%             figure(5);
+%             hold on;
+%             plot(obj.xPos, obj.yPos, 'b');
+%             obj.xTrajectories = [obj.xTrajectories, traj.poses(:,1)'];
+%             obj.yTrajectories = [obj.yTrajectories, traj.poses(:,2)'];
+%             plot(obj.xTrajectories, obj.yTrajectories, 'g');
+%             figure(6);
+%             plot(follower.time, follower.error, '-r');
+            
             
         end
-        
     end
     
 end

@@ -83,7 +83,6 @@ classdef rangeImage < handle
             
             for i = 1:size(obj.tArray,2)
                 [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);                
-%                 disp([num2str(err), ' ', num2str(bestErr), ' ', num2str(obj.rArray(i))]);
             end
             for i = 1:size(obj.tArray,2)
                 
@@ -91,12 +90,10 @@ classdef rangeImage < handle
                 peak = false;
                 if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
                     peak = true;
-                    disp('peak found');
-                    i
+%                     disp('peak found');
+%                     i
                 end
                 if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
-                     disp(['***********found better********** ', int2str(i)]);
-%                     disp(obj.rArray(i));
                     bestErr = err(i);
                     bestTh = th(i);
                     bestLen = len(i);
@@ -138,13 +135,12 @@ classdef rangeImage < handle
                 end
             end
             
-%             disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
-
             if (numpixels > 1)
                 numpixels = numpixels-2;
                 leftIndex = obj.inc(leftIndex);
                 rightIndex = obj.dec(rightIndex);
             end
+            
             % make sure endpoints aren't zero
             while (obj.rArray(leftIndex) == 0 || obj.rArray(rightIndex) == 0)
                 leftIndex = obj.inc(leftIndex);
@@ -165,22 +161,17 @@ classdef rangeImage < handle
             yRight = obj.yArray(rightIndex);
             len = sqrt((xLeft-xRight)^2 + (yLeft-yRight)^2);
             
-%             disp(['for ', num2str(obj.tArray(middle)*180/pi), ' len is ', num2str(len), ' with some pixels ', num2str(numpixels)]);
-
             if (len > 2*maxLen || numpixels == 1)
                 num = 0;
                 err = NaN;
                 th = 1;
-%                 disp('returning here');
                 return;
             end
             
             num = numpixels;
-%             disp([xLeft, xRight, yLeft, yRight]);
             th = atan2(yRight-yLeft, xRight-xLeft);
             thPos = th+pi/2;
             thNeg = th-pi/2;
-%             disp([obj.tArray(middle), thPos, thNeg]);
             direc = obj.tArray(middle);
             posErr = abs(thPos-direc);
             if posErr > pi

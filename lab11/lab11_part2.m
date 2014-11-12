@@ -1,6 +1,6 @@
 clc;
 
-robot = neato('giga');
+robot = neato('milli');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -29,7 +29,7 @@ for i = 1:3
     ranges = robot.laser.data.ranges;
     downSample = 10;
     image = rangeImage(ranges, downSample, false);
-    [r, success] = r.processRangeImage(image);
+    [r, success] = r.processRangeImage(image, 100);
     pause(0.1);
 
     % find object in range image
@@ -39,10 +39,11 @@ for i = 1:3
         image = rangeImage(ranges, 1, 1);
         [x,y,th] = image.findObject(.14); % not sure where this number comes from, taken from lab 8
         foundLine = x || y;
+        pause(.1);
     end
 
     % go to object
-    [xNew, yNew, thNew] = targetTransform(x,y,th);
+    [xNew, yNew, thNew] = targetTransform(x,y,th)
     newPose = pose(xNew, yNew, thNew);
     [r, error] = r.executeTrajectoryToRelativePose(newPose, 1);
     
