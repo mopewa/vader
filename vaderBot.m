@@ -230,8 +230,8 @@ classdef vaderBot
         end
         
         % execute a trajectory to a pose specified in world coordinates
-        function [obj, totalError] = executeTrajectoryToAbsolutePose(obj, pose, useMap)
-            relPose = pose(r.getPose().aToB()*pose2.bToA());
+        function [obj, totalError] = executeTrajectoryToAbsolutePose(obj, absPose, useMap)
+            relPose = pose(obj.getPose().aToB()*absPose.bToA());
             [obj, totalError] = obj.executeTrajectoryToRelativePose(relPose, useMap);
         end
         
@@ -265,10 +265,11 @@ classdef vaderBot
             prevRightEncoder = rightEncoder;
             prevTimeStamp = timeStamp;
             
+            pause(5);
             timer = tic;
             currentTime = toc(timer);
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
-                
+%                 obj.robot.encoders.data.left
                 newLE = leftEncoder;
                 newRE = rightEncoder;
                 newTS = timeStamp;
@@ -289,7 +290,7 @@ classdef vaderBot
                 % process range data
                 if (useMap && currentTime < trajectory.getTrajectoryDuration() - 0.2)
                     ranges = obj.robot.laser.data.ranges;
-                    downSample = 10;
+                    downSample = 20;
                     image = rangeImage(ranges, downSample, false);
                     [obj, success] = obj.processRangeImage(image, 10);
                 end
@@ -357,9 +358,9 @@ classdef vaderBot
             end
             %}
             % go to pose
-            [r, ~] = obj.executeTrajectoryToRelativePose(p, 1);
+            [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
             
-            pause(3);
+            pause(1);
             
             if (dropFlag)
                 robot.forksDown();
@@ -367,14 +368,13 @@ classdef vaderBot
                 robot.forksUp();
             end
             
-            pause(2);
+            pause(1);
             
             % back up 15 centimeters
-            if (~dropFlag)
-                r.moveRelDistance(-.15);
-            end
+            obj = obj.moveRelDistance(-.15);
+            obj = obj.moveRelAngle(pi);
             
-            pause(2);
+%             pause(2);
         end
     end
     

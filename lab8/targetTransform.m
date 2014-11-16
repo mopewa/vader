@@ -1,6 +1,6 @@
 function [ x, y, th ] = targetTransform( x0, y0 ,th0 )
-%TARGETTRANSFORM Summary of this function goes here
-%   Detailed explanation goes here
+%TARGETTRANSFORM Given a target pose in the *SENSOR* frame, return the pose
+% the robot should drive to so that it drives to the target
 
     % describes relative pose between object and final robot position
     Tog = [1, 0, -0.178; 0, 1, 0; 0, 0, 1];
