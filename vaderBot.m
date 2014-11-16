@@ -143,7 +143,7 @@ classdef vaderBot
         
         % updates the robot's state when new laser range data arrives
         function [obj, success] = processRangeImage(obj, image, maxIters)
-%             maxIters = 10;
+            %             maxIters = 10;
             curPose = obj.getPose();
             [success, poseMap] = obj.localizer.refinePose(curPose,[image.xArray; image.yArray; ones(size(image.xArray))],maxIters);
             
@@ -155,7 +155,7 @@ classdef vaderBot
                 poseMap.th
                 pause(10);
             end
-         
+            
             obj = obj.setPose(poseFused);
         end
         
@@ -174,18 +174,18 @@ classdef vaderBot
                 w = (vR - vL)/vaderBot.W;
                 V = (vR + vL)/2;
                 
-%                 x1 = V*cos(obj.theta(obj.index));
-%                 y1 = V*sin(obj.theta(obj.index));
-%                 
-%                 x2 = V*cos(obj.theta(obj.index)+w*dt/2);
-%                 y2 = V*sin(obj.theta(obj.index)+w*dt/2);
-%                 
-%                 x4 = V*cos(obj.theta(obj.index)+w*dt);
-%                 y4 = V*sin(obj.theta(obj.index)+w*dt);
-%                 
-%                 obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
-%                 obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
-%                 obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
+                %                 x1 = V*cos(obj.theta(obj.index));
+                %                 y1 = V*sin(obj.theta(obj.index));
+                %
+                %                 x2 = V*cos(obj.theta(obj.index)+w*dt/2);
+                %                 y2 = V*sin(obj.theta(obj.index)+w*dt/2);
+                %
+                %                 x4 = V*cos(obj.theta(obj.index)+w*dt);
+                %                 y4 = V*sin(obj.theta(obj.index)+w*dt);
+                %
+                %                 obj.xPos(obj.index+1) = obj.xPos(obj.index)+dt*(x1+4*x2+x4)/6;
+                %                 obj.yPos(obj.index+1) = obj.yPos(obj.index)+dt*(y1+4*y2+y4)/6;
+                %                 obj.theta(obj.index+1) = obj.theta(obj.index)+w*dt;
                 
                 
                 tempTheta = obj.theta(obj.index) + w*dt/2;
@@ -264,7 +264,7 @@ classdef vaderBot
             prevLeftEncoder = leftEncoder;
             prevRightEncoder = rightEncoder;
             prevTimeStamp = timeStamp;
-
+            
             timer = tic;
             currentTime = toc(timer);
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
@@ -281,7 +281,7 @@ classdef vaderBot
                 prevTimeStamp = newTS;
                 
                 obj = obj.processOdometryData(eL, eR, dt);
-
+                
                 currentTime = toc(timer);
                 [vl, vr, follower] = follower.getVelocity(currentTime, obj);
                 
@@ -305,7 +305,7 @@ classdef vaderBot
             prevTimeStamp = timeStamp;
             
             obj = obj.updateState(eL, eR, dt);
-
+            
             obj.drive(0,0);
             
             eL = leftEncoder - prevLeftEncoder;
@@ -313,22 +313,68 @@ classdef vaderBot
             dt = timeStamp - prevTimeStamp;
             
             obj = obj.updateState(eL, eR, dt);
-
+            
             [finalX, finalY, ~] = traj.getPoseAtTime(currentTime);
             xError = obj.xPos(obj.index)-finalX;
             yError = obj.yPos(obj.index)-finalY;
             totalError = sqrt(xError^2 + yError^2);
             
-%             figure(5);
-%             hold on;
-%             plot(obj.xPos, obj.yPos, 'b');
-%             obj.xTrajectories = [obj.xTrajectories, traj.poses(:,1)'];
-%             obj.yTrajectories = [obj.yTrajectories, traj.poses(:,2)'];
-%             plot(obj.xTrajectories, obj.yTrajectories, 'g');
-%             figure(6);
-%             plot(follower.time, follower.error, '-r');
+            %             figure(5);
+            %             hold on;
+            %             plot(obj.xPos, obj.yPos, 'b');
+            %             obj.xTrajectories = [obj.xTrajectories, traj.poses(:,1)'];
+            %             obj.yTrajectories = [obj.yTrajectories, traj.poses(:,2)'];
+            %             plot(obj.xTrajectories, obj.yTrajectories, 'g');
+            %             figure(6);
+            %             plot(follower.time, follower.error, '-r');
+        end
+        
+        
+        function [obj] = pickDropObject(obj, robot, p, dropFlag)
+            disp('here');
+            % takes robot and targetTransformed object pose. If dropFlag is false,
+            % it drives to pose, does a pick up and backs up. Otherwise, it
+            % drive to pose and does a drop
+            %{
+            if (~dropFlag)
+                % get close to object
+                closePose = 
+                [obj, ~] = obj.executeTrajectoryToRelativePose(closePose, 1);
+                
+                pause(3);
+                foundLine = 0;
+                while (~foundLine)
+                    ranges = robot.laser.data.ranges;
+                    image = rangeImage(ranges, 1, 1);
+                    [x,y,th] = image.findObject(.14);
+                    foundLine = x || y;
+                    pause(.1);
+                end
+                
+                [xNew, yNew, thNew] = targetTransform(x,y,th);
+                
+                p = pose(xNew, yNew, thNew);
+            end
+            %}
+            % go to pose
+            [r, ~] = obj.executeTrajectoryToRelativePose(p, 1);
             
+            pause(3);
             
+            if (dropFlag)
+                robot.forksDown();
+            else
+                robot.forksUp();
+            end
+            
+            pause(2);
+            
+            % back up 15 centimeters
+            if (~dropFlag)
+                r.moveRelDistance(-.15);
+            end
+            
+            pause(2);
         end
     end
     
