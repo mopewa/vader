@@ -147,16 +147,18 @@ classdef vaderBot
             curPose = obj.getPose();
             [success, poseMap] = obj.localizer.refinePose(curPose,[image.xArray; image.yArray; ones(size(image.xArray))],maxIters);
             
-            subPose = pose.subtractPoses(curPose, poseMap);
-            fractionPose = pose(.25 * subPose.x, .25*subPose.y, .25*subPose.th);
-            poseFused = pose.addPoses(curPose, fractionPose);
-            
-            if (isnan(poseFused.th) || isinf(poseFused.th))
-                poseMap.th
-                pause(10);
+            if (success)
+                subPose = pose.subtractPoses(curPose, poseMap);
+                fractionPose = pose(.25 * subPose.x, .25*subPose.y, .25*subPose.th);
+                poseFused = pose.addPoses(curPose, fractionPose);
+
+                if (isnan(poseFused.th) || isinf(poseFused.th))
+                    poseMap.th
+                    %pause(10);
+                else
+                    obj = obj.setPose(poseFused);
+                end
             end
-            
-            obj = obj.setPose(poseFused);
         end
         
         % updates the robot's state when new odometry data arrives
@@ -213,7 +215,7 @@ classdef vaderBot
             end
             vmax = min(theta, 1);
             path = trapezoidalStepAngleControl(.75, vmax, theta, sign, 0);
-            [obj, totalError] = obj.executeTrajectory2(path, 1, 1);
+            [obj, totalError] = obj.executeTrajectory2(path, 1, 1, 0);
         end
         
         % move a fixed straight line distance relative to the robot
@@ -226,7 +228,7 @@ classdef vaderBot
             % pass dist as vmax so that trajectory takes at least a second
             vmax = min(dist, .25);
             path = trapezoidalStepReferenceControl(.75, vmax, dist, sign, 0);
-            [obj, totalError] = obj.executeTrajectory(path, 1);
+            [obj, totalError] = obj.executeTrajectory2(path, 1, 0, 0);
         end
         
         % execute a trajectory to a pose specified in world coordinates
@@ -239,16 +241,16 @@ classdef vaderBot
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
             path.planVelocities(.15);
-            pause(5);
+%             pause(5);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
         % for backwards-compatability, for non turn-in-place trajectories
         function [obj, totalError] = executeTrajectory(obj, trajectory, useMap)
-            [obj, totalError] = obj.executeTrajectory2(trajectory, useMap, 0);
+            [obj, totalError] = obj.executeTrajectory2(trajectory, useMap, 0, 1);
         end
         
-        function [obj, totalError] = executeTrajectory2(obj, trajectory, useMap, turnInPlace)
+        function [obj, totalError] = executeTrajectory2(obj, trajectory, useMap, turnInPlace, usePause)
             global leftEncoder;
             global rightEncoder;
             global timeStamp;
@@ -265,7 +267,9 @@ classdef vaderBot
             prevRightEncoder = rightEncoder;
             prevTimeStamp = timeStamp;
             
-            pause(5);
+            if (usePause)
+                pause(5);
+            end
             timer = tic;
             currentTime = toc(timer);
             while (currentTime < trajectory.getTrajectoryDuration() + 1)
