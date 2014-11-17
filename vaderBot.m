@@ -268,7 +268,7 @@ classdef vaderBot
             prevTimeStamp = timeStamp;
             
             if (usePause)
-                pause(5);
+                pause(2);
             end
             timer = tic;
             currentTime = toc(timer);
@@ -335,8 +335,7 @@ classdef vaderBot
         end
         
         
-        function [obj] = pickDropObject(obj, robot, p, dropFlag)
-            disp('here');
+        function [obj] = pickDropObject(obj, robot, p, dropFlag, nextPose)
             % takes robot and targetTransformed object pose. If dropFlag is false,
             % it drives to pose, does a pick up and backs up. Otherwise, it
             % drive to pose and does a drop
@@ -344,7 +343,7 @@ classdef vaderBot
             if(~dropFlag)
                 % go to pose
                 [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
-            
+                
                 pause(1);
             
                 %Find target
@@ -376,6 +375,9 @@ classdef vaderBot
             
             % back up 15 centimeters
             obj = obj.moveRelDistance(-.10);
+            
+%             relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
+%             nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
             obj = obj.moveRelAngle(pi);
             
 %             pause(2);
