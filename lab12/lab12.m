@@ -2,7 +2,7 @@ clc;
 
 totalTime = tic;
 
-robot = neato('milli');
+robot = neato('mega');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -37,7 +37,8 @@ for i = 1:numToGet
     pause(0.1);
     
     % pick up object
-    relPickup = pose(r.getPose().aToB()*pickups(i).bToA());
+    acquisitionPose = pose(pickups(i).x, pickups(i).y - .2, pickups(i).th);
+    relPickup = pose(r.getPose().aToB()*acquisitionPose.bToA());
     pickupTarget = targetTransform2(relPickup);
     r = r.pickDropObject(robot, pickupTarget, false);
     

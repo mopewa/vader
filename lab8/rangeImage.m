@@ -89,7 +89,7 @@ classdef rangeImage < handle
             bestX = 0;
             bestY = 0;
             err = zeros(1, size(angles,2));
-            num = zeros(1, size(angles,2));                                                                                                                                                                     
+            num = zeros(1, size(obj.tArray,2));                                                                                                                                                                     
             len = zeros(1, size(angles,2));
             th = zeros(1, size(angles,2));
             x = zeros(1, size(angles,2));                                                       

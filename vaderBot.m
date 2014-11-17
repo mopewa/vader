@@ -361,6 +361,27 @@ classdef vaderBot
                 p = pose(xNew, yNew, thNew);
             end
             %}
+            
+            if(~dropFlag)
+                % go to pose
+                [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
+            
+                pause(1);
+            
+                %Find target
+                foundLine = 0;
+                while (~foundLine)
+                    ranges = robot.laser.data.ranges;
+                    image = rangeImage(ranges, 1, 1);
+                    [x,y,th] = image.findObjectAround(.14, 0);
+                    foundLine = x || y;
+                    pause(.1);
+                end
+                targetPose = pose(x, y, th);
+                [pX, pY, pTh] = targetTransform(targetPose.x, targetPose.y, targetPose.th);
+                p = pose(pX, pY, pTh);
+            end
+            
             % go to pose
             [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
             
