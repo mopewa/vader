@@ -33,13 +33,13 @@ classdef rangeImage < handle
                     obj.yArray(n) = ranges(i)*sin(obj.tArray(n));
                 end
                 obj.numPix = n;
-                if cleanFlag 
+                if cleanFlag
                     obj.removeBadPoints(obj.maxUsefulRange);
                     obj.numPix = length(obj.rArray);
                 end
             end
         end
-              
+        
         function removeBadPoints(obj, maxRange)
             % takes all points above and below two range thresholds
             % out of the arrays. This is a convenience but the result
@@ -68,6 +68,52 @@ classdef rangeImage < handle
             plot(obj.xArray, obj.yArray)
         end
         
+        function [bestX, bestY, bestTh] = findObjectAround(obj, maxLen, angle)
+            bestErr = intmax;
+            bestTh = 0;
+            bestLen = 0;
+            bestX = 0;
+            bestY = 0;
+            err = zeros(1, size(obj.tArray,2));
+            num = zeros(1, size(obj.tArray,2));
+            len = zeros(1, size(obj.tArray,2));
+            th = zeros(1, size(obj.tArray,2));
+            x = zeros(1, size(obj.tArray,2));
+            y = zeros(1, size(obj.tArray,2));
+            
+            if (angle - 10 < 1)
+                startAngle = 0;
+            else
+                startAngle = angle - 10;
+            end
+            
+            if (angle + 10 > 360)
+                endAngle = 360;
+            else
+                endAngle = angle + 10;
+            end
+            
+            for i = startAngle:endAngle
+                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);
+            end
+            
+            for i = 1:size(obj.tArray,2)
+                peak = false;
+                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
+                    peak = true;
+                    %                     disp('peak found');
+                    %                     i
+                end
+                if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
+                    bestErr = err(i);
+                    bestTh = th(i);
+                    bestLen = len(i);
+                    bestX = x(i);
+                    bestY = y(i);
+                end
+            end
+        end
+        
         function [bestX, bestY, bestTh] = findObject(obj, maxLen)
             bestErr = intmax;
             bestTh = 0;
@@ -82,16 +128,14 @@ classdef rangeImage < handle
             y = zeros(1, size(obj.tArray,2));
             
             for i = 1:size(obj.tArray,2)
-                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);                
+                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);
             end
             for i = 1:size(obj.tArray,2)
-                
-                %Currently throwing out values for i not between 100 and 250 
                 peak = false;
                 if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
                     peak = true;
-%                     disp('peak found');
-%                     i
+                    %                     disp('peak found');
+                    %                     i
                 end
                 if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
                     bestErr = err(i);
@@ -150,7 +194,7 @@ classdef rangeImage < handle
                     num = 0;
                     err = NaN;
                     th = 1;
-%                     disp('failing here');
+                    %                     disp('failing here');
                     return;
                 end
             end
