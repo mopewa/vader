@@ -68,21 +68,9 @@ classdef rangeImage < handle
             plot(obj.xArray, obj.yArray)
         end
         
-        function [bestX, bestY, bestTh] = findObjectAround(obj, maxLen, angle)
-            bestErr = intmax;
-            bestTh = 0;
-            bestLen = 0;
-            bestX = 0;
-            bestY = 0;
-            err = zeros(1, size(obj.tArray,2));
-            num = zeros(1, size(obj.tArray,2));
-            len = zeros(1, size(obj.tArray,2));
-            th = zeros(1, size(obj.tArray,2));
-            x = zeros(1, size(obj.tArray,2));
-            y = zeros(1, size(obj.tArray,2));
-            
+        function [bestX, bestY, bestTh] = findObjectAround(obj, maxLen, angle)        
             if (angle - 10 < 1)
-                startAngle = 0;
+                startAngle = 1;
             else
                 startAngle = angle - 10;
             end
@@ -93,16 +81,28 @@ classdef rangeImage < handle
                 endAngle = angle + 10;
             end
             
-            for i = startAngle:endAngle
-                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);
+            angles = startAngle:endAngle;
+            
+            bestErr = intmax;
+            bestTh = 0;
+            bestLen = 0;
+            bestX = 0;
+            bestY = 0;
+            err = zeros(1, size(angles,2));
+            num = zeros(1, size(angles,2));                                                                                                                                                                     
+            len = zeros(1, size(angles,2));
+            th = zeros(1, size(angles,2));
+            x = zeros(1, size(angles,2));                                                       
+            y = zeros(1, size(angles,2));
+            
+            for i = 1:size(angles,2)
+                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(angles(i), maxLen);
             end
             
-            for i = 1:size(obj.tArray,2)
+            for i = 1:size(angles,2)
                 peak = false;
                 if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
                     peak = true;
-                    %                     disp('peak found');
-                    %                     i
                 end
                 if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
                     bestErr = err(i);
