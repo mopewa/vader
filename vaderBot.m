@@ -340,27 +340,6 @@ classdef vaderBot
             % takes robot and targetTransformed object pose. If dropFlag is false,
             % it drives to pose, does a pick up and backs up. Otherwise, it
             % drive to pose and does a drop
-            %{
-            if (~dropFlag)
-                % get close to object
-                closePose = 
-                [obj, ~] = obj.executeTrajectoryToRelativePose(closePose, 1);
-                
-                pause(3);
-                foundLine = 0;
-                while (~foundLine)
-                    ranges = robot.laser.data.ranges;
-                    image = rangeImage(ranges, 1, 1);
-                    [x,y,th] = image.findObject(.14);
-                    foundLine = x || y;
-                    pause(.1);
-                end
-                
-                [xNew, yNew, thNew] = targetTransform(x,y,th);
-                
-                p = pose(xNew, yNew, thNew);
-            end
-            %}
             
             if(~dropFlag)
                 % go to pose
@@ -396,7 +375,7 @@ classdef vaderBot
             pause(1);
             
             % back up 15 centimeters
-            obj = obj.moveRelDistance(-.15);
+            obj = obj.moveRelDistance(-.10);
             obj = obj.moveRelAngle(pi);
             
 %             pause(2);

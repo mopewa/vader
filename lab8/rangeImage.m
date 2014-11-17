@@ -69,39 +69,27 @@ classdef rangeImage < handle
         end
         
         function [bestX, bestY, bestTh] = findObjectAround(obj, maxLen, angle)        
-            if (angle - 10 < 1)
-                startAngle = 1;
-            else
-                startAngle = angle - 10;
-            end
-            
-            if (angle + 10 > 360)
-                endAngle = 360;
-            else
-                endAngle = angle + 10;
-            end
-            
-            angles = startAngle:endAngle;
             
             bestErr = intmax;
             bestTh = 0;
             bestLen = 0;
             bestX = 0;
             bestY = 0;
-            err = zeros(1, size(angles,2));
-            num = zeros(1, size(obj.tArray,2));                                                                                                                                                                     
-            len = zeros(1, size(angles,2));
-            th = zeros(1, size(angles,2));
-            x = zeros(1, size(angles,2));                                                       
-            y = zeros(1, size(angles,2));
+            err = zeros(1, size(obj.tArray,2));
+            num = zeros(1, size(obj.tArray,2));
+            len = zeros(1, size(obj.tArray,2));
+            th = zeros(1, size(obj.tArray,2));
+            x = zeros(1, size(obj.tArray,2));
+            y = zeros(1, size(obj.tArray,2));
+            bearing = zeros(1, size(obj.tArray,2));
             
-            for i = 1:size(angles,2)
-                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(angles(i), maxLen);
+            for i = 1:size(obj.tArray,2)
+                [err(i), num(i), th(i), len(i), x(i), y(i)] = obj.findLineCandidate(i, maxLen);
+                bearing(i) = atan2(y(i), x(i));
             end
-            
-            for i = 1:size(angles,2)
+            for i = 1:size(obj.tArray,2)
                 peak = false;
-                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5)
+                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5 && abs(bearing(i)) < 0.2)
                     peak = true;
                 end
                 if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)

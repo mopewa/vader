@@ -2,7 +2,7 @@ clc;
 
 totalTime = tic;
 
-robot = neato('mega');
+robot = neato('nano');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -28,6 +28,7 @@ dropoffs = [pose(1.75*12*.0254, .5*12*.0254, -pi/2), ...
 
 numToGet = size(pickups,2);
 
+robot.forksDown();
 for i = 1:numToGet
     % localize
     ranges = robot.laser.data.ranges;
@@ -37,7 +38,7 @@ for i = 1:numToGet
     pause(0.1);
     
     % pick up object
-    acquisitionPose = pose(pickups(i).x, pickups(i).y - .2, pickups(i).th);
+    acquisitionPose = pose(pickups(i).x, pickups(i).y - .25, pickups(i).th);
     relPickup = pose(r.getPose().aToB()*acquisitionPose.bToA());
     pickupTarget = targetTransform2(relPickup);
     r = r.pickDropObject(robot, pickupTarget, false);
