@@ -241,7 +241,6 @@ classdef vaderBot
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
             path.planVelocities(.15);
-%             pause(5);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
@@ -335,10 +334,12 @@ classdef vaderBot
         end
         
         
-        function [obj] = pickDropObject(obj, robot, p, dropFlag, nextPose)
+        function [obj, success] = pickDropObject(obj, robot, p, dropFlag, nextPose)
             % takes robot and targetTransformed object pose. If dropFlag is false,
             % it drives to pose, does a pick up and backs up. Otherwise, it
             % drive to pose and does a drop
+            
+            success = 1;
             
             if(~dropFlag)
                 % go to pose
@@ -347,40 +348,41 @@ classdef vaderBot
                 pause(1);
             
                 %Find target
-                foundLine = 0;
-                while (~foundLine)
-                    ranges = robot.laser.data.ranges;
-                    image = rangeImage(ranges, 1, 1);
-                    [x,y,th] = image.findObjectAround(.14, 0);
-                    foundLine = x || y;
+                ranges = robot.laser.data.ranges;
+                image = rangeImage(ranges, 1, 1);
+                [x,y,th] = image.findObjectAround(.14, 0);
+                foundLine = x || y;
+                if (foundLine)
                     pause(.1);
+                    targetPose = pose(x, y, th);
+                    [pX, pY, pTh] = targetTransform(targetPose.x, targetPose.y, targetPose.th);
+                    p = pose(pX, pY, pTh);
+                else
+                    success = 0;
                 end
-                targetPose = pose(x, y, th);
-                [pX, pY, pTh] = targetTransform(targetPose.x, targetPose.y, targetPose.th);
-                p = pose(pX, pY, pTh);
             end
             
             % go to pose
-            [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
-            
-            pause(1);
-            
-            if (dropFlag)
-                robot.forksDown();
-            else
-                robot.forksUp();
+            if (success)
+                [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
+
+                pause(1);
+
+                if (dropFlag)
+                    robot.forksDown();
+                else
+                    robot.forksUp();
+                end
+
+                pause(1);
+
+                % back up 15 centimeters
+                obj = obj.moveRelDistance(-.10);
+
+    %             relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
+    %             nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
+                obj = obj.moveRelAngle(pi);
             end
-            
-            pause(1);
-            
-            % back up 15 centimeters
-            obj = obj.moveRelDistance(-.10);
-            
-%             relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
-%             nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
-            obj = obj.moveRelAngle(pi);
-            
-%             pause(2);
         end
     end
     

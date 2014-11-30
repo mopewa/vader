@@ -7,7 +7,7 @@ robot = neato('nano');
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
 
-r = vaderBot(.75*12*.0254, .75*12*.0254, pi()/2.0, robot);
+r = vaderBot(.75*12*.0254, .75*12*.0254, -pi()/2.0, robot);
 
 robot.startLaser();
 pause(3);
@@ -27,6 +27,8 @@ dropoffs = [pose(1.75*12*.0254, .5*12*.0254, -pi/2), ...
     pose(2.75*12*.0254, .5*12*.0254, -pi/2)];
 
 numToGet = size(pickups,2);
+
+r = r.moveRelAngle(pi);
 
 robot.forksDown();
 for i = 1:numToGet
