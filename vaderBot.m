@@ -392,9 +392,9 @@ classdef vaderBot
                 % back up 15 centimeters
                 obj = obj.moveRelDistance(-.10);
 
-    %             relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
-    %             nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
-                obj = obj.moveRelAngle(pi);
+                relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
+                nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
+                obj = obj.moveRelAngle(nextTargetTheta);
             end
         end
     end

@@ -62,17 +62,21 @@ for pickupIndex = 1:numToGet
         % drop off object
         nextPose = dropoffs(dropoffIndex);
         if (pickupIndex < numToGet)
-            nextPose = pickups(pickupIndex);
+            nextPose = pickups(pickupIndex+1);
         end
         relDropoff = pose(r.getPose().aToB()*dropoffs(dropoffIndex).bToA());
         dropoffTarget = targetTransform2(relDropoff);
         r = r.pickDropObject(robot, dropoffTarget, true, nextPose);
         dropoffIndex = dropoffIndex+1;
+        if (dropoffIndex == 7)
+            break;
+        end
     else
         % if object was missing, back up to make finding the next one
         % easier
         r = r.moveRelDistance(-.1);
     end
+    curTime = toc(totalTime)
 end
 
 endtime = toc(totalTime)

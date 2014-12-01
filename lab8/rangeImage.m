@@ -89,7 +89,7 @@ classdef rangeImage < handle
             end
             for i = 1:size(obj.tArray,2)
                 peak = false;
-                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5 && abs(bearing(i)) < 0.2)
+                if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5 && abs(bearing(i)) < 0.3)
                     peak = true;
                 end
                 if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
