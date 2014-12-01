@@ -2,7 +2,7 @@ clc;
 
 totalTime = tic;
 
-robot = neato('nano');
+robot = neato('femto');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -14,7 +14,7 @@ pause(3);
 
 % create map
 endpoints1 = [[0 ; 0] [0 ; 0] [8*12*0.0254 ; 0]];
-endpoints2 = [[8*12*0.0254 ; 0] [0 ; 6*12*0.0254] [8*12*0.0254 ; 6*12*0.0254]];
+endpoints2 = [[8*12*0.0254 ; 0] [0 ; 8*12*0.0254] [8*12*0.0254 ; 8*12*0.0254]];
 localizer = lineMapLocalizer(endpoints1, endpoints2, 0.1, 0.001, 0.0005);
 r = r.setLocalizer(localizer);
 
@@ -56,7 +56,7 @@ for pickupIndex = 1:numToGet
     % pick up object
     relPickup = pose(r.getPose().aToB()*pickups(pickupIndex).bToA());
     pickupTarget = targetTransform2(relPickup);
-    [r, pickedUp] = r.pickDropObject(robot, pickupTarget, false, dropoffs(i));
+    [r, pickedUp] = r.pickDropObject(robot, pickupTarget, false, dropoffs(pickupIndex));
     
     if (pickedUp)
         % drop off object

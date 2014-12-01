@@ -134,6 +134,8 @@ classdef vaderBot
                 obj.theta(obj.index+1) = pose.th;
                 obj.time(obj.index+1) = obj.time(obj.index);
                 obj.index = obj.index + 1;
+            else
+                disp('Localization not updated');
             end
         end
         
@@ -171,6 +173,7 @@ classdef vaderBot
             if (dt ~= 0)
                 obj.time(obj.index+1) = obj.time(obj.index) + dt;
                 
+                
                 vL = encoderL/dt/1000;
                 vR = encoderR/dt/1000;
                 w = (vR - vL)/vaderBot.W;
@@ -191,8 +194,18 @@ classdef vaderBot
                 
                 
                 tempTheta = obj.theta(obj.index) + w*dt/2;
-                obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
-                obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;
+                
+                deltaX = abs(obj.xPos(obj.index) - (obj.xPos(obj.index) + V*cos(tempTheta)*dt));
+                deltaY = abs(obj.yPos(obj.index) - (obj.yPos(obj.index) + V*sin(tempTheta)*dt));
+                
+                if (deltaX > .2 || deltaY > .2)
+                    obj.xPos(obj.index+1) = obj.xPos(obj.index);
+                    obj.yPos(obj.index+1) = obj.yPos(obj.index);
+                    disp('Odometry state update ignored')
+                else
+                    obj.xPos(obj.index+1) = obj.xPos(obj.index) + V*cos(tempTheta)*dt;
+                    obj.yPos(obj.index+1) = obj.yPos(obj.index) + V*sin(tempTheta)*dt;                 
+                end
                 obj.theta(obj.index+1) = tempTheta + w*dt/2;
                 
                 
