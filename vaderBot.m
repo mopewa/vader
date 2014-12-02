@@ -378,22 +378,23 @@ classdef vaderBot
             % go to pose
             if (success)
                 [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
-
+   
                 pause(1);
 
                 if (dropFlag)
                     robot.forksDown();
                 else
+                    obj = obj.moveRelDistance(.08);
                     robot.forksUp();
                 end
 
                 pause(1);
 
                 % back up 15 centimeters
-                obj = obj.moveRelDistance(-.10);
+                obj = obj.moveRelDistance(-.15);
 
                 relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
-                nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x)
+                nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x);
                 obj = obj.moveRelAngle(nextTargetTheta);
             end
         end
