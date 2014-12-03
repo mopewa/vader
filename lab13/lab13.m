@@ -2,7 +2,7 @@ clc;
 
 totalTime = tic;
 
-robot = neato('nano');
+robot = neato('mega');
 
 lh = event.listener(robot.encoders, 'OnMessageReceived', ...
     @basicEncoderListener);
@@ -31,12 +31,12 @@ pickups = [pose(4*12*.0254, 6*12*.0254-acquisitionOffset, pi/2), ...
     pose(6*12*.0254, 6*12*.0254-acquisitionOffset, pi/2), ...
     pose(7*12*.0254, 6*12*.0254-acquisitionOffset, pi/2)];
 dropoffs = [pose(1*12*.0254, 1*12*.0254, -pi/2), ...
-    pose(2*12*.0254, .8*12*.0254, -pi/2), ...
-    pose(3*12*.0254, .8*12*.0254, -pi/2), ...
-    pose(4*12*.0254, .8*12*.0254, -pi/2), ...
-    pose(5*12*.0254, .8*12*.0254, -pi/2), ...
-    pose(6*12*.0254, .8*12*.0254, -pi/2), ...
-    pose(7*12*.0254, .8*12*.0254, -pi/2)];
+    pose(2*12*.0254, 1*12*.0254, -pi/2), ...
+    pose(3*12*.0254, 1*12*.0254, -pi/2), ...
+    pose(4*12*.0254, 1*12*.0254, -pi/2), ...
+    pose(5*12*.0254, 1*12*.0254, -pi/2), ...
+    pose(6*12*.0254, 1*12*.0254, -pi/2), ...
+    pose(7*12*.0254, 1*12*.0254, -pi/2)];
 
 numToGet = size(pickups,2);
 
@@ -56,9 +56,9 @@ for pickupIndex = 1:numToGet
     % pick up object
     relPickup = pose(r.getPose().aToB()*pickups(pickupIndex).bToA());
     pickupTarget = targetTransform2(relPickup);
-    [r, pickedUp] = r.pickDropObject(robot, pickupTarget, false, dropoffs(dropoffIndex));
+    [r, saw, pickedUp] = r.pickDropObject(robot, pickupTarget, false, dropoffs(dropoffIndex));
     
-    if (pickedUp)
+    if (saw && pickedUp)
         % drop off object
         nextPose = dropoffs(dropoffIndex);
         if (pickupIndex < numToGet)
@@ -71,10 +71,12 @@ for pickupIndex = 1:numToGet
             break;
         end
         dropoffIndex = dropoffIndex+1;
-    else
+    elseif (~saw)
         % if object was missing, back up to make finding the next one
         % easier
-        r = r.moveRelDistance(-.5);
+        r = r.moveRelDistance(-.3);
+    else
+%         r = r.moveRelDistance(.3);
     end
     curTime = toc(totalTime)
 end

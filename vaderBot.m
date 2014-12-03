@@ -128,7 +128,7 @@ classdef vaderBot
         end
         
         function obj = setPose(obj, pose)
-            if(abs(pose.x-obj.getPose.x) < 0.20 || abs(pose.y-obj.getPose.y) < 0.2)
+            if(abs(pose.x-obj.getPose.x) < 0.20 && abs(pose.y-obj.getPose.y) < 0.2)
                 obj.xPos(obj.index+1) = pose.x;
                 obj.yPos(obj.index+1) = pose.y;
                 obj.theta(obj.index+1) = pose.th;
@@ -253,7 +253,7 @@ classdef vaderBot
         % execute a trajectory to a pose specified in robot coordinates
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
-            path.planVelocities(.15);
+            path.planVelocities(.25);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
@@ -347,12 +347,13 @@ classdef vaderBot
         end
         
         
-        function [obj, success] = pickDropObject(obj, robot, p, dropFlag, nextPose)
+        function [obj, saw, pickedUp] = pickDropObject(obj, robot, p, dropFlag, nextPose)
             % takes robot and targetTransformed object pose. If dropFlag is false,
             % it drives to pose, does a pick up and backs up. Otherwise, it
             % drive to pose and does a drop
             
-            success = 1;
+            saw = 1;
+            pickedUp = 1;
             
             if(~dropFlag)
                 % go to pose
@@ -371,12 +372,12 @@ classdef vaderBot
                     [pX, pY, pTh] = targetTransform(targetPose.x, targetPose.y, targetPose.th);
                     p = pose(pX, pY, pTh);
                 else
-                    success = 0;
+                    saw = 0;
                 end
             end
             
             % go to pose
-            if (success)
+            if (saw)
                 [obj, ~] = obj.executeTrajectoryToRelativePose(p, 1);
    
                 pause(1);
@@ -384,7 +385,7 @@ classdef vaderBot
                 if (dropFlag)
                     robot.forksDown();
                 else
-                    obj = obj.moveRelDistance(.08);
+                    obj = obj.moveRelDistance(.13);
                     robot.forksUp();
                 end
 
@@ -396,6 +397,17 @@ classdef vaderBot
                 relNextTarget = pose(obj.getPose().aToB()*nextPose.bToA());
                 nextTargetTheta = atan2(relNextTarget.y, relNextTarget.x);
                 obj = obj.moveRelAngle(nextTargetTheta);
+                
+                if (~dropFlag)
+                    ranges = robot.laser.data.ranges;
+                    image = rangeImage(ranges, 1, 1);
+                    [x,y,th] = image.findObjectAround(.14, 0);
+                    foundLine = x || y;
+                    if (~foundLine)
+                        pickedUp = 0;
+                        robot.forksDown();
+                    end
+                end
             end
         end
     end

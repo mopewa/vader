@@ -4,7 +4,7 @@ classdef rangeImage < handle
     properties(Constant)
         maxUsefulRange = 1.5;
         minUsefulRange = 0.05;
-        maxRangeForTarget = 1.0;
+        maxRangeForTarget = .7;
     end
     
     properties(Access = public)
@@ -92,7 +92,7 @@ classdef rangeImage < handle
                 if (num(i) > num(obj.incStep(i,3))+3.5 && num(i) > num(obj.decStep(i,3))+3.5 && abs(bearing(i)) < 0.3)
                     peak = true;
                 end
-                if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak)
+                if (err(i) < bestErr && len(i) > bestLen && obj.rArray(i) > 0 && obj.rArray(i) < 1.5 && peak && x(i) < obj.maxRangeForTarget)
                     bestErr = err(i);
                     bestTh = th(i);
                     bestLen = len(i);
