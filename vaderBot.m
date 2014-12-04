@@ -253,7 +253,7 @@ classdef vaderBot
         % execute a trajectory to a pose specified in robot coordinates
         function [obj, totalError] = executeTrajectoryToRelativePose(obj, pose, useMap)
             path = cubicSpiral.planTrajectory(pose.x, pose.y, pose.th, 1);
-            path.planVelocities(.25);
+            path.planVelocities(.28);
             [obj, totalError] = obj.executeTrajectory(path, useMap);
         end
         
